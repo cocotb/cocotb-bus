@@ -16,8 +16,9 @@ import struct
 import zlib
 
 from cocotb.utils import hexdump
-from cocotb.monitors import Monitor
 from cocotb.triggers import RisingEdge
+
+from cocotb_bus.monitors import Monitor
 
 _XGMII_IDLE      = 0x07  # noqa
 _XGMII_START     = 0xFB  # noqa

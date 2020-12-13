@@ -20,7 +20,8 @@ import logging
 logging.getLogger("scapy").setLevel(logging.ERROR)
 
 from cocotb.decorators import public
-from cocotb.generators.byte import get_bytes, random_data
+
+from cocotb_bus.generators.byte import get_bytes, random_data
 
 _default_payload = random_data
 

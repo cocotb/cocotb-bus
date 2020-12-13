@@ -17,10 +17,11 @@ from typing import Iterable, Union, Optional
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep, Event
-from cocotb.drivers import BusDriver, ValidatedBusDriver
 from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.result import TestError
+
+from cocotb_bus.drivers import BusDriver, ValidatedBusDriver
 
 
 class AvalonMM(BusDriver):
