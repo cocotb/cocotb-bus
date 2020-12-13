@@ -11,8 +11,9 @@ import warnings
 
 from cocotb.utils import hexdump, hexdiffs
 from cocotb.log import SimLog
-from cocotb.monitors import Monitor
 from cocotb.result import TestFailure, TestSuccess
+
+from cocotb_bus.monitors import Monitor
 
 
 class Scoreboard:

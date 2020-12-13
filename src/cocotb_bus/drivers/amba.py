@@ -13,9 +13,10 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import cocotb
 from cocotb.binary import BinaryValue
-from cocotb.drivers import BusDriver
 from cocotb.handle import SimHandleBase
 from cocotb.triggers import ClockCycles, Combine, Lock, ReadOnly, RisingEdge
+
+from cocotb_bus.drivers import BusDriver
 
 
 class AXIBurst(enum.IntEnum):

@@ -14,9 +14,10 @@ NB Currently we only support a very small subset of functionality.
 import warnings
 
 from cocotb.utils import hexdump
-from cocotb.monitors import BusMonitor
 from cocotb.triggers import RisingEdge, ReadOnly
 from cocotb.binary import BinaryValue
+
+from cocotb_bus.monitors import BusMonitor
 
 
 class AvalonProtocolError(Exception):

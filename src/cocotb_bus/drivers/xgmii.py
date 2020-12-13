@@ -9,10 +9,11 @@ import struct
 import zlib
 
 from cocotb.triggers import RisingEdge
-from cocotb.drivers import Driver
 from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.handle import SimHandleBase
+
+from cocotb_bus.drivers import Driver
 
 _XGMII_IDLE      = 0x07  # noqa
 _XGMII_START     = 0xFB  # noqa

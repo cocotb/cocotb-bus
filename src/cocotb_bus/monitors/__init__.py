@@ -13,10 +13,11 @@ the transactions.
 from collections import deque
 
 import cocotb
-from cocotb.bus import Bus
 from cocotb.decorators import coroutine
 from cocotb.log import SimLog
 from cocotb.triggers import Event, Timer, First
+
+from cocotb_bus.bus import Bus
 
 
 class MonitorStatistics:

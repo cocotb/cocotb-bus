@@ -13,9 +13,10 @@ import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import (Event, RisingEdge, ReadOnly, NextTimeStep,
                              Edge)
-from cocotb.bus import Bus
 from cocotb.log import SimLog
 from cocotb.handle import SimHandleBase
+
+from cocotb_bus.bus import Bus
 
 
 class BitDriver:
