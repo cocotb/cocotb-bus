@@ -27,14 +27,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-EXAMPLES := adder/tests \
-            axi_lite_slave/tests \
-            dff/tests \
-            simple_dff \
+EXAMPLES := axi_lite_slave/tests \
             endian_swapper/tests \
-            matrix_multiplier/tests \
-            mean/tests \
-            mixed_language/tests
 
 .PHONY: $(EXAMPLES)
 
