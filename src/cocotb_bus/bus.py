@@ -57,7 +57,7 @@ class Bus:
 
         if case_insensitive:
             signal_names = dir(self._entity)
-            signal_name_mapping = dict([(n.casefold(), n) for n in signal_names])
+            signal_name_mapping = dict((n.casefold(), n) for n in signal_names)
 
         for attr_name, sig_name in _build_sig_attr_dict(signals).items():
             if name:
