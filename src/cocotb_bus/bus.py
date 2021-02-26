@@ -71,7 +71,7 @@ class Bus:
                 if signame not in signal_names and signame_folded in signal_name_mapping:
                     signame = signal_name_mapping[signame_folded]
 
-            self._add_signal(attr_name, signame)
+            self._add_signal(attr_name, signame, array_idx)
 
         # Also support a set of optional signals that don't have to be present
         for attr_name, sig_name in _build_sig_attr_dict(optional_signals).items():
