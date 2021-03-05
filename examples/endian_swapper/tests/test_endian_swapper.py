@@ -28,23 +28,105 @@
 import random
 import logging
 import warnings
+import math
+import itertools
 
 import cocotb
 
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge, ReadOnly
-from cocotb.drivers import BitDriver
-from cocotb.drivers.avalon import AvalonSTPkts as AvalonSTDriver
-from cocotb.drivers.avalon import AvalonMaster
-from cocotb.monitors.avalon import AvalonSTPkts as AvalonSTMonitor
 from cocotb.regression import TestFactory
-from cocotb.scoreboard import Scoreboard
+from cocotb_bus.drivers import BitDriver
+from cocotb_bus.drivers.avalon import AvalonSTPkts as AvalonSTDriver
+from cocotb_bus.drivers.avalon import AvalonMaster
+from cocotb_bus.monitors.avalon import AvalonSTPkts as AvalonSTMonitor
+from cocotb_bus.scoreboard import Scoreboard
 
-# Data generators
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    from cocotb.generators.byte import random_data, get_bytes
-    from cocotb.generators.bit import wave, intermittent_single_cycles, random_50_percent
+
+def sine_wave(amplitude, w, offset=0):
+    """
+    Generates a sine wave that repeats forever
+    Args:
+        amplitude (int/float): peak deviation of the function from zero
+        w (int/float): is the rate of change of the function argument
+    Yields:
+        floats that form a sine wave
+    """
+    twoPiF_DIV_sampleRate = math.pi * 2
+    while True:
+        for idx in (i / float(w) for i in range(int(w))):
+            yield amplitude * math.sin(twoPiF_DIV_sampleRate * idx) + offset
+
+
+def bit_toggler(gen_on, gen_off):
+    """Combines two generators to provide cycles_on, cycles_off tuples
+    Args:
+        gen_on (generator): generator that yields number of cycles on
+        gen_off (generator): generator that yields number of cycles off
+    """
+    for n_on, n_off in zip(gen_on, gen_off):
+        yield int(abs(n_on)), int(abs(n_off))
+
+
+def wave(on_ampl=30, on_freq=200, off_ampl=10, off_freq=100):
+    """
+    Drive a repeating sine_wave pattern
+    TODO:
+        Adjust args so we just specify a repeat duration and overall throughput
+    """
+    return bit_toggler(sine_wave(on_ampl, on_freq),
+                       sine_wave(off_ampl, off_freq))
+
+
+def gaussian(mean, sigma):
+    """
+    Generate a Gaussian distribution indefinitely
+    Args:
+        mean (int/float): mean value
+        sigma (int/float): Standard deviation
+    .. deprecated:: 1.4.1
+    """
+    while True:
+        yield random.gauss(mean, sigma)
+
+
+def intermittent_single_cycles(mean=10, sigma=None):
+    """Generator to intermittently insert a single cycle pulse
+    Args:
+        mean (int, optional): Average number of cycles in between single cycle gaps
+        sigma (int, optional): Standard deviation of gaps.  mean/4 if sigma is None
+    """
+    if sigma is None:
+        sigma = mean / 4.0
+
+    return bit_toggler(gaussian(mean, sigma), itertools.repeat(1))
+
+
+def random_50_percent(mean=10, sigma=None):
+    """50% duty cycle with random width
+    Args:
+        mean (int, optional): Average number of cycles on/off
+        sigma (int, optional): Standard deviation of gaps.  mean/4 if sigma is None
+    """
+    if sigma is None:
+        sigma = mean / 4.0
+    for duration in gaussian(mean, sigma):
+        yield int(abs(duration)), int(abs(duration))
+
+
+def get_bytes(nbytes: int, generator):
+    """
+    Get *nbytes* bytes from *generator*
+    """
+    return bytes(next(generator) for i in range(nbytes))
+
+
+def random_data():
+    r"""
+    Random bytes
+    """
+    while True:
+        yield random.randrange(256)
 
 
 async def stream_out_config_setter(dut, stream_out, stream_in):
