@@ -1,0 +1,50 @@
+# Copyright cocotb contributors
+# Licensed under the Revised BSD License, see LICENSE for details.
+# SPDX-License-Identifier: BSD-3-Clause
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+      - 'stable/**'
+  pull_request:
+    branches:
+      - master
+      - 'stable/**'
+
+jobs:
+  tests:
+    name: ${{matrix.extra_name}}${{matrix.sim}} (${{matrix.sim-version}}) | ${{matrix.os}} | Python ${{matrix.python-version}} ${{matrix.may_fail && '| May Fail' || ''}}
+    runs-on: ${{matrix.os}}
+    env:
+      SIM: ${{matrix.sim}}
+      TOPLEVEL_LANG: ${{matrix.lang}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - sim: icarus
+          sim-version: apt
+          lang: verilog
+          python-version: 3.6
+          os: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{matrix.python-version}}
+    - name: Install cocotb requirements
+      run: |
+        sudo apt install -y g++ make
+    - name: Set up Icarus (apt)
+      if: matrix.sim == 'icarus' && matrix.sim-version == 'apt'
+      run: |
+        sudo apt install -y iverilog
+    - name: Install testing requirements
+      run: |
+        pip install nox
+    - name: Run tests
+      continue-on-error: ${{matrix.may_fail || false}}
+      run: |
+        nox -e tests
