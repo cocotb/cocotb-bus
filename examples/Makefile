@@ -28,6 +28,8 @@
 ###############################################################################
 
 EXAMPLES := axi_lite_slave/tests \
+			dff/tests \
+			mean/tests \
             endian_swapper/tests \
 
 .PHONY: $(EXAMPLES)
