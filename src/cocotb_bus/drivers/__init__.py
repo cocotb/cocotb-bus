@@ -81,6 +81,8 @@ class Driver:
         """Constructor for a driver instance."""
         self._pending = Event(name="Driver._pending")
         self._sendQ = deque()
+        self.busy_event = Event("Driver._busy")
+        self.busy = False
 
         # Sub-classes may already set up logging
         if not hasattr(self, "log"):
@@ -88,6 +90,16 @@ class Driver:
 
         # Create an independent coroutine which can send stuff
         self._thread = cocotb.scheduler.add(self._send_thread())
+
+    async def _acquire_lock(self):
+        if self.busy:
+            await self.busy_event.wait()
+        self.busy_event.clear()
+        self.busy = True
+
+    def _release_lock(self):
+        self.busy = False
+        self.busy_event.set()
 
     def kill(self):
         """Kill the coroutine sending stuff."""
