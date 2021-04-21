@@ -79,21 +79,9 @@ class AvalonMaster(AvalonMM):
     def __init__(self, entity, name, clock, **kwargs):
         AvalonMM.__init__(self, entity, name, clock, **kwargs)
         self.log.debug("AvalonMaster created")
-        self.busy_event = Event("%s_busy" % name)
-        self.busy = False
 
     def __len__(self):
         return 2**len(self.bus.address)
-
-    async def _acquire_lock(self):
-        if self.busy:
-            await self.busy_event.wait()
-        self.busy_event.clear()
-        self.busy = True
-
-    def _release_lock(self):
-        self.busy = False
-        self.busy_event.set()
 
     @coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryValue:

@@ -31,18 +31,6 @@ class OPBMaster(BusDriver):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         self.bus.select.setimmediatevalue(0)
         self.log.debug("OPBMaster created")
-        self.busy_event = Event("%s_busy" % name)
-        self.busy = False
-
-    async def _acquire_lock(self):
-        if self.busy:
-            await self.busy_event.wait()
-        self.busy_event.clear()
-        self.busy = True
-
-    def _release_lock(self):
-        self.busy = False
-        self.busy_event.set()
 
     @cocotb.coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryValue:
