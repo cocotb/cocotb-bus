@@ -14,7 +14,7 @@ NB Currently we only support a very small subset of functionality.
 import warnings
 
 from cocotb.utils import hexdump
-from cocotb.triggers import RisingEdge, ReadOnly
+from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.monitors import BusMonitor
@@ -49,7 +49,6 @@ class AvalonST(BusMonitor):
 
         # Avoid spurious object creation by recycling
         clkedge = RisingEdge(self.clock)
-        rdonly = ReadOnly()
 
         def valid():
             if hasattr(self.bus, "ready"):
@@ -59,7 +58,6 @@ class AvalonST(BusMonitor):
         # NB could await on valid here more efficiently?
         while True:
             await clkedge
-            await rdonly
             if valid():
                 vec = self.bus.data.value
                 vec.big_endian = self.config["firstSymbolInHighOrderBits"]
@@ -130,7 +128,6 @@ class AvalonSTPkts(BusMonitor):
 
         # Avoid spurious object creation by recycling
         clkedge = RisingEdge(self.clock)
-        rdonly = ReadOnly()
         pkt = b""
         in_pkt = False
         invalid_cyclecount = 0
@@ -143,7 +140,6 @@ class AvalonSTPkts(BusMonitor):
 
         while True:
             await clkedge
-            await rdonly
 
             if self.in_reset:
                 continue
