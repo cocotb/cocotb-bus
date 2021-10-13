@@ -9,7 +9,6 @@ A bus is simply defined as a collection of signals.
 """
 from cocotb.handle import _AssignmentResult
 
-
 def _build_sig_attr_dict(signals):
     if isinstance(signals, dict):
         return signals
@@ -54,24 +53,13 @@ class Bus:
         self._entity = entity
         self._name = name
         self._signals = {}
-
-        if case_insensitive:
-            signal_names = dir(self._entity)
-            signal_name_mapping = dict((n.casefold(), n) for n in signal_names)
-
         for attr_name, sig_name in _build_sig_attr_dict(signals).items():
             if name:
                 signame = name + bus_separator + sig_name
             else:
                 signame = sig_name
 
-            # case insensitive remap
-            if case_insensitive:
-                signame_folded = signame.casefold()
-                if signame not in signal_names and signame_folded in signal_name_mapping:
-                    signame = signal_name_mapping[signame_folded]
-
-            self._add_signal(attr_name, signame, array_idx)
+            self._add_signal(attr_name, signame, array_idx, case_insensitive)
 
         # Also support a set of optional signals that don't have to be present
         for attr_name, sig_name in _build_sig_attr_dict(optional_signals).items():
@@ -80,22 +68,24 @@ class Bus:
             else:
                 signame = sig_name
 
-            # case insensitive remap
-            if case_insensitive:
-                signame_folded = signame.casefold()
-                if signame not in signal_names and signame_folded in signal_name_mapping:
-                    signame = signal_name_mapping[signame_folded]
-
             self._entity._log.debug("Signal name {}".format(signame))
             if hasattr(entity, signame):
-                self._add_signal(attr_name, signame, array_idx)
+                self._add_signal(attr_name, signame, array_idx, case_insensitive)
             else:
                 self._entity._log.debug("Ignoring optional missing signal "
                                         "%s on bus %s" % (sig_name, name))
 
-    def _add_signal(self, attr_name, signame, array_idx=None):
+    def _caseInsensGetattr(self, obj, attr):
+        for a in dir(obj):
+            if a.casefold() == attr.casefold():
+                return getattr(obj, a)
+
+    def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True):
         self._entity._log.debug("Signal name {}, idx {}".format(signame, array_idx))
-        handle = getattr(self._entity, signame)
+        if case_insensitive:
+            handle = self._caseInsensGetattr(self._entity, signame)
+        else:
+            handle = getattr(self._entity, signame)
         if array_idx is not None:
             handle = handle[array_idx]
         setattr(self, attr_name, handle)
