@@ -24,11 +24,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        # Test against the oldest supported version of Python.
         - sim: icarus
           sim-version: apt
           lang: verilog
-          python-version: 3.6
+          python-version: "3.6"
           os: ubuntu-20.04
+          cocotb-version: cocotb # Current release version
+        - sim: icarus
+          sim-version: apt
+          lang: verilog
+          python-version: "3.6"
+          os: ubuntu-20.04
+          cocotb-version: "git+https://github.com/cocotb/cocotb.git@master#egg=cocotb"
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -43,6 +51,11 @@ jobs:
         sudo apt install -y iverilog
     - name: Install testing requirements
       run: |
+        # Explicitly install a version of cocotb instead of relying on the
+        # dependency cocotb-bus declares to test against different cocotb
+        # versions.
+        pip install ${{matrix.cocotb-version}}
+
         pip install nox
     - name: Run tests
       continue-on-error: ${{matrix.may_fail || false}}
