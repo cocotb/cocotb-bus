@@ -16,7 +16,7 @@ from typing import Iterable, Union, Optional
 
 import cocotb
 from cocotb.decorators import coroutine
-from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep, Event
+from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep
 from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.result import TestError

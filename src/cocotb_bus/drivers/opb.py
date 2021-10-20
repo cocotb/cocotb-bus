@@ -10,7 +10,7 @@ NOTE: Currently we only support a very small subset of functionality.
 """
 
 import cocotb
-from cocotb.triggers import RisingEdge, ReadOnly, Event
+from cocotb.triggers import RisingEdge, ReadOnly
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.drivers import BusDriver
