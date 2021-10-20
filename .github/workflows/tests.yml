@@ -37,6 +37,20 @@ jobs:
           python-version: "3.6"
           os: ubuntu-20.04
           cocotb-version: "git+https://github.com/cocotb/cocotb.git@master#egg=cocotb"
+
+        # Test against the newest supported version of Python.
+        - sim: icarus
+          sim-version: apt
+          lang: verilog
+          python-version: "3.10"
+          os: ubuntu-20.04
+          cocotb-version: cocotb # Current release version
+        - sim: icarus
+          sim-version: apt
+          lang: verilog
+          python-version: "3.10"
+          os: ubuntu-20.04
+          cocotb-version: "git+https://github.com/cocotb/cocotb.git@master#egg=cocotb"
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
