@@ -138,7 +138,7 @@ class XGMII(Driver):
         """Helper function to set bus to IDLE state."""
         for i in range(len(self.bus)):
             self.bus[i] = (_XGMII_IDLE, True)
-        self.signal <= self.bus.value
+        self.signal.value = self.bus.value
 
     def terminate(self, index: int) -> None:
         """Helper function to terminate from a provided lane index.
@@ -174,7 +174,7 @@ class XGMII(Driver):
             self.bus[i] = (pkt[i-1], False)
 
         pkt = pkt[len(self.bus)-1:]
-        self.signal <= self.bus.value
+        self.signal.value = self.bus.value
         await clkedge
 
         done = False
@@ -189,13 +189,13 @@ class XGMII(Driver):
                     break
                 self.bus[i] = (pkt[i], False)
 
-            self.signal <= self.bus.value
+            self.signal.value = self.bus.value
             await clkedge
             pkt = pkt[len(self.bus):]
 
         if not done:
             self.terminate(0)
-            self.signal <= self.bus.value
+            self.signal.value = self.bus.value
             await clkedge
 
         self.idle()

@@ -53,7 +53,7 @@ class AvalonMM(BusDriver):
             self.bus.write.setimmediatevalue(0)
             v = self.bus.writedata.value
             v.binstr = "x" * len(self.bus.writedata)
-            self.bus.writedata <= v
+            self.bus.writedata.value = v
             self._can_write = True
 
         if hasattr(self.bus, "byteenable"):
@@ -110,12 +110,12 @@ class AvalonMaster(AvalonMM):
         # Apply values for next clock edge
         if sync:
             await RisingEdge(self.clock)
-        self.bus.address <= address
-        self.bus.read <= 1
+        self.bus.address.value = address
+        self.bus.read.value = 1
         if hasattr(self.bus, "byteenable"):
-            self.bus.byteenable <= int("1"*len(self.bus.byteenable), 2)
+            self.bus.byteenable.value = int("1"*len(self.bus.byteenable), 2)
         if hasattr(self.bus, "cs"):
-            self.bus.cs <= 1
+            self.bus.cs.value = 1
 
         # Wait for waitrequest to be low
         if hasattr(self.bus, "waitrequest"):
@@ -123,14 +123,14 @@ class AvalonMaster(AvalonMM):
         await RisingEdge(self.clock)
 
         # Deassert read
-        self.bus.read <= 0
+        self.bus.read.value = 0
         if hasattr(self.bus, "byteenable"):
-            self.bus.byteenable <= 0
+            self.bus.byteenable.value = 0
         if hasattr(self.bus, "cs"):
-            self.bus.cs <= 0
+            self.bus.cs.value = 0
         v = self.bus.address.value
         v.binstr = "x" * len(self.bus.address)
-        self.bus.address <= v
+        self.bus.address.value = v
 
         if hasattr(self.bus, "readdatavalid"):
             while True:
@@ -170,13 +170,13 @@ class AvalonMaster(AvalonMM):
 
         # Apply values to bus
         await RisingEdge(self.clock)
-        self.bus.address <= address
-        self.bus.writedata <= value
-        self.bus.write <= 1
+        self.bus.address.value = address
+        self.bus.writedata.value = value
+        self.bus.write.value = 1
         if hasattr(self.bus, "byteenable"):
-            self.bus.byteenable <= int("1"*len(self.bus.byteenable), 2)
+            self.bus.byteenable.value = int("1"*len(self.bus.byteenable), 2)
         if hasattr(self.bus, "cs"):
-            self.bus.cs <= 1
+            self.bus.cs.value = 1
 
         # Wait for waitrequest to be low
         if hasattr(self.bus, "waitrequest"):
@@ -184,18 +184,18 @@ class AvalonMaster(AvalonMM):
 
         # Deassert write
         await RisingEdge(self.clock)
-        self.bus.write <= 0
+        self.bus.write.value = 0
         if hasattr(self.bus, "byteenable"):
-            self.bus.byteenable <= 0
+            self.bus.byteenable.value = 0
         if hasattr(self.bus, "cs"):
-            self.bus.cs <= 0
+            self.bus.cs.value = 0
         v = self.bus.address.value
         v.binstr = "x" * len(self.bus.address)
-        self.bus.address <= v
+        self.bus.address.value = v
 
         v = self.bus.writedata.value
         v.binstr = "x" * len(self.bus.writedata)
-        self.bus.writedata <= v
+        self.bus.writedata.value = v
         self._release_lock()
 
 
@@ -272,9 +272,9 @@ class AvalonMemory(BusDriver):
                 self._burstread = True
             self._burstwrite = True
             if self._avalon_properties.get("WriteBurstWaitReq", True):
-                self.bus.waitrequest <= 1
+                self.bus.waitrequest.value = 1
             else:
-                self.bus.waitrequest <= 0
+                self.bus.waitrequest.value = 0
 
         if hasattr(self.bus, "readdatavalid"):
             self.bus.readdatavalid.setimmediatevalue(0)
@@ -298,11 +298,11 @@ class AvalonMemory(BusDriver):
                 self._val.integer = resp
                 self.log.debug("sending 0x%x (%s)" %
                                (self._val.integer, self._val.binstr))
-            self.bus.readdata <= self._val
+            self.bus.readdata.value = self._val
             if hasattr(self.bus, "readdatavalid"):
-                self.bus.readdatavalid <= 1
+                self.bus.readdatavalid.value = 1
         elif hasattr(self.bus, "readdatavalid"):
-            self.bus.readdatavalid <= 0
+            self.bus.readdatavalid.value = 0
 
     def _write_burst_addr(self):
         """Reading write burst address, burstcount, byteenable."""
@@ -341,12 +341,12 @@ class AvalonMemory(BusDriver):
                 randmax = self._avalon_properties.get("MaxWaitReqLen", 0)
                 waitingtime = range(random.randint(0, randmax))
                 for waitreq in waitingtime:
-                    self.bus.waitrequest <= 1
+                    self.bus.waitrequest.value = 1
                     await RisingEdge(self.clock)
             else:
                 await NextTimeStep()
 
-            self.bus.waitrequest <= 0
+            self.bus.waitrequest.value = 0
 
     async def _respond(self):
         """Coroutine to respond to the actual requests."""
@@ -389,10 +389,10 @@ class AvalonMemory(BusDriver):
                     # toggle waitrequest
                     # TODO: configure waitrequest time with Avalon properties
                     await NextTimeStep()  # can't write during read-only phase
-                    self.bus.waitrequest <= 1
+                    self.bus.waitrequest.value = 1
                     await edge
                     await edge
-                    self.bus.waitrequest <= 0
+                    self.bus.waitrequest.value = 0
 
                     # wait for read data
                     for i in range(self._avalon_properties["readLatency"]):
@@ -464,7 +464,7 @@ class AvalonMemory(BusDriver):
                         await self._waitrequest()
 
                     if self._avalon_properties.get("WriteBurstWaitReq", True):
-                        self.bus.waitrequest <= 1
+                        self.bus.waitrequest.value = 1
 
 
 class AvalonST(ValidatedBusDriver):
@@ -487,8 +487,8 @@ class AvalonST(ValidatedBusDriver):
         word = BinaryValue(n_bits=len(self.bus.data), bigEndian=self.config["firstSymbolInHighOrderBits"],
                            value="x" * len(self.bus.data))
 
-        self.bus.valid  <= 0
-        self.bus.data   <= word
+        self.bus.valid.value = 0
+        self.bus.data.value = word
 
     async def _wait_ready(self):
         """Wait for a ready cycle on the bus before continuing.
@@ -516,14 +516,14 @@ class AvalonST(ValidatedBusDriver):
         word = BinaryValue(n_bits=len(self.bus.data), bigEndian=False)
 
         # Drive some defaults since we don't know what state we're in
-        self.bus.valid <= 0
+        self.bus.valid.value = 0
 
         if sync:
             await clkedge
 
         # Insert a gap where valid is low
         if not self.on:
-            self.bus.valid <= 0
+            self.bus.valid.value = 0
             for _ in range(self.off):
                 await clkedge
 
@@ -534,10 +534,10 @@ class AvalonST(ValidatedBusDriver):
         if self.on is not True and self.on:
             self.on -= 1
 
-        self.bus.valid <= 1
+        self.bus.valid.value = 1
 
         word.assign(value)
-        self.bus.data <= word
+        self.bus.data.value = word
 
         # If this is a bus with a ready signal, wait for this word to
         # be acknowledged
@@ -545,9 +545,9 @@ class AvalonST(ValidatedBusDriver):
             await self._wait_ready()
 
         await clkedge
-        self.bus.valid <= 0
+        self.bus.valid.value = 0
         word.binstr   = "x" * len(self.bus.data)
-        self.bus.data <= word
+        self.bus.data.value = word
 
         self.log.debug("Successfully sent Avalon transmission: %r", value)
 
@@ -597,15 +597,15 @@ class AvalonSTPkts(ValidatedBusDriver):
         word.binstr   = "x" * len(self.bus.data)
         single.binstr = "x"
 
-        self.bus.valid <= 0
-        self.bus.data <= word
-        self.bus.startofpacket <= single
-        self.bus.endofpacket <= single
+        self.bus.valid.value = 0
+        self.bus.data.value = word
+        self.bus.startofpacket.value = single
+        self.bus.endofpacket.value = single
 
         if self.use_empty:
             empty = BinaryValue(n_bits=len(self.bus.empty), bigEndian=False,
                                 value="x" * len(self.bus.empty))
-            self.bus.empty <= empty
+            self.bus.empty.value = empty
 
         if hasattr(self.bus, 'channel'):
             if len(self.bus.channel) > 128:
@@ -618,7 +618,7 @@ class AvalonSTPkts(ValidatedBusDriver):
                                      (self.name, self.config['maxChannel'], maxChannel, len(self.bus.channel)))
             channel = BinaryValue(n_bits=len(self.bus.channel), bigEndian=False,
                                   value="x" * len(self.bus.channel))
-            self.bus.channel <= channel
+            self.bus.channel.value = channel
 
     async def _wait_ready(self):
         """Wait for a ready cycle on the bus before continuing.
@@ -653,15 +653,15 @@ class AvalonSTPkts(ValidatedBusDriver):
 
         # Drive some defaults since we don't know what state we're in
         if self.use_empty:
-            self.bus.empty <= 0
-        self.bus.startofpacket <= 0
-        self.bus.endofpacket <= 0
-        self.bus.valid <= 0
+            self.bus.empty.value = 0
+        self.bus.startofpacket.value = 0
+        self.bus.endofpacket.value = 0
+        self.bus.valid.value = 0
         if hasattr(self.bus, 'error'):
-            self.bus.error <= 0
+            self.bus.error.value = 0
 
         if hasattr(self.bus, 'channel'):
-            self.bus.channel <= 0
+            self.bus.channel.value = 0
         elif channel is not None:
             raise TestError("%s does not have a channel signal" % self.name)
 
@@ -671,7 +671,7 @@ class AvalonSTPkts(ValidatedBusDriver):
 
             # Insert a gap where valid is low
             if not self.on:
-                self.bus.valid <= 0
+                self.bus.valid.value = 0
                 for _ in range(self.off):
                     await clkedge
 
@@ -682,35 +682,35 @@ class AvalonSTPkts(ValidatedBusDriver):
             if self.on is not True and self.on:
                 self.on -= 1
 
-            self.bus.valid <= 1
+            self.bus.valid.value = 1
             if hasattr(self.bus, 'channel'):
                 if channel is None:
-                    self.bus.channel <= 0
+                    self.bus.channel.value = 0
                 elif channel > self.config['maxChannel'] or channel < 0:
                     raise TestError("%s: Channel value %d is outside range 0-%d" %
                                     (self.name, channel, self.config['maxChannel']))
                 else:
-                    self.bus.channel <= channel
+                    self.bus.channel.value = channel
 
             if firstword:
-                self.bus.startofpacket <= 1
+                self.bus.startofpacket.value = 1
                 firstword = False
             else:
-                self.bus.startofpacket <= 0
+                self.bus.startofpacket.value = 0
 
             nbytes = min(len(string), bus_width)
             data = string[:nbytes]
             word.buff = data
 
             if len(string) <= bus_width:
-                self.bus.endofpacket <= 1
+                self.bus.endofpacket.value = 1
                 if self.use_empty:
-                    self.bus.empty <= bus_width - len(string)
+                    self.bus.empty.value = bus_width - len(string)
                 string = b""
             else:
                 string = string[bus_width:]
 
-            self.bus.data <= word
+            self.bus.data.value = word
 
             # If this is a bus with a ready signal, wait for this word to
             # be acknowledged
@@ -718,21 +718,21 @@ class AvalonSTPkts(ValidatedBusDriver):
                 await self._wait_ready()
 
         await clkedge
-        self.bus.valid <= 0
-        self.bus.endofpacket <= 0
+        self.bus.valid.value = 0
+        self.bus.endofpacket.value = 0
         word.binstr   = "x" * len(self.bus.data)
         single.binstr = "x"
-        self.bus.data <= word
-        self.bus.startofpacket <= single
-        self.bus.endofpacket <= single
+        self.bus.data.value = word
+        self.bus.startofpacket.value = single
+        self.bus.endofpacket.value = single
 
         if self.use_empty:
             empty.binstr = "x" * len(self.bus.empty)
-            self.bus.empty <= empty
+            self.bus.empty.value = empty
         if hasattr(self.bus, 'channel'):
             channel_value = BinaryValue(n_bits=len(self.bus.channel), bigEndian=False,
                                         value="x" * len(self.bus.channel))
-            self.bus.channel <= channel_value
+            self.bus.channel.value = channel_value
 
     async def _send_iterable(self, pkt: Iterable, sync: bool = True) -> None:
         """Args:
@@ -750,7 +750,7 @@ class AvalonSTPkts(ValidatedBusDriver):
 
             # Insert a gap where valid is low
             if not self.on:
-                self.bus.valid <= 0
+                self.bus.valid.value = 0
                 for _ in range(self.off):
                     await clkedge
 
@@ -762,9 +762,9 @@ class AvalonSTPkts(ValidatedBusDriver):
                 self.on -= 1
 
             if not hasattr(word, "valid"):
-                self.bus.valid <= 1
+                self.bus.valid.value = 1
             else:
-                self.bus <= word
+                self.bus.value = word
 
             # Wait for valid words to be acknowledged
             if not hasattr(word, "valid") or word.valid:
@@ -772,7 +772,7 @@ class AvalonSTPkts(ValidatedBusDriver):
                     await self._wait_ready()
 
         await clkedge
-        self.bus.valid <= 0
+        self.bus.valid.value = 0
 
     async def _driver_send(self, pkt: Union[bytes, Iterable], sync: bool = True, channel: Optional[int] = None):
         """Send a packet over the bus.

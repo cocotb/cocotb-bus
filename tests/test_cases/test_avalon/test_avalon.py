@@ -44,7 +44,7 @@ class BurstAvlReadTest(object):
     def __init__(self, dut, avlproperties={}):
         self.dut = dut
         # Launch clock
-        dut.reset = 1
+        dut.reset.value = 1
         clk_gen = cocotb.fork(Clock(dut.clk, 10).start())
 
         # Bytes aligned memory
@@ -58,13 +58,13 @@ class BurstAvlReadTest(object):
     async def init_sig(self, burstcount_w, address):
         """ Initialize all signals """
         await Timer(1, "ns")
-        self.dut.reset = 0
-        self.dut.user_read_buffer = 0
-        self.dut.control_read_base = address
-        self.dut.control_read_length = burstcount_w*4
-        self.dut.control_fixed_location = 0
-        self.dut.control_go = 0
-        self.dut.master_waitrequest = 0
+        self.dut.reset.value = 0
+        self.dut.user_read_buffer.value = 0
+        self.dut.control_read_base.value = address
+        self.dut.control_read_length.value = burstcount_w*4
+        self.dut.control_fixed_location.value = 0
+        self.dut.control_go.value = 0
+        self.dut.master_waitrequest.value = 0
 
 
 @cocotb.test()
@@ -77,13 +77,13 @@ async def test_burst_read(dut):
     await bart.init_sig(wordburstcount, address)
     await Timer(100, "ns")
     # Begin master burst read
-    dut.control_go = 1
+    dut.control_go.value = 1
     await Timer(10, "ns")
-    dut.control_go = 0
+    dut.control_go.value = 0
     await Timer(200, "ns")
 
     # read back values
-    dut.user_read_buffer = 1
+    dut.user_read_buffer.value = 1
     await RisingEdge(dut.clk)
     read_mem = {}
     databuswidthB = len(dut.master_byteenable)
@@ -96,7 +96,7 @@ async def test_burst_read(dut):
                 (value >> i*8)& 0xFF
         burst += 1
 
-    dut.user_read_buffer = 0
+    dut.user_read_buffer.value = 0
     await RisingEdge(dut.clk)
 
     print(str(read_mem))
@@ -116,5 +116,5 @@ async def test_burst_read(dut):
                               memdictvalue)
 
     await Timer(1, "ns")
-    dut.user_read_buffer = 0
+    dut.user_read_buffer.value = 0
     await Timer(1, "ns")

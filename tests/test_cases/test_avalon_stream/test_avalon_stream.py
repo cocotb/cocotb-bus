@@ -69,11 +69,11 @@ class AvalonSTTB(object):
         self.backpressure = BitDriver(self.dut.aso_ready, self.dut.clk)
 
     async def initialise(self):
-        self.dut.reset <= 0
+        self.dut.reset.value = 0
         cocotb.fork(Clock(self.dut.clk, 10).start())
         for _ in range(3):
             await self.clkedge
-        self.dut.reset <= 1
+        self.dut.reset.value = 1
         await self.clkedge
 
     async def send_data(self, data):

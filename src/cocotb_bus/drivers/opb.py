@@ -54,10 +54,10 @@ class OPBMaster(BusDriver):
         # Apply values for next clock edge
         if sync:
             await RisingEdge(self.clock)
-        self.bus.ABus <= address
-        self.bus.select <= 1
-        self.bus.RNW <= 1
-        self.bus.BE <= 0xF
+        self.bus.ABus.value = address
+        self.bus.select.value = 1
+        self.bus.RNW.value = 1
+        self.bus.BE.value = 0xF
 
         count = 0
         while not int(self.bus.xferAck.value):
@@ -72,7 +72,7 @@ class OPBMaster(BusDriver):
         data = int(self.bus.DBus_out.value)
 
         # Deassert read
-        self.bus.select <= 0
+        self.bus.select.value = 0
         self._release_lock()
         self.log.info("Read of address 0x%x returned 0x%08x" % (address, data))
         return data
@@ -94,11 +94,11 @@ class OPBMaster(BusDriver):
 
         if sync:
             await RisingEdge(self.clock)
-        self.bus.ABus <= address
-        self.bus.select <= 1
-        self.bus.RNW <= 0
-        self.bus.BE <= 0xF
-        self.bus.DBus_out <= value
+        self.bus.ABus.value = address
+        self.bus.select.value = 1
+        self.bus.RNW.value = 0
+        self.bus.BE.value = 0xF
+        self.bus.DBus_out.value = value
 
         count = 0
         while not int(self.bus.xferAck.value):
@@ -111,5 +111,5 @@ class OPBMaster(BusDriver):
             if count >= self._max_cycles:
                 raise OPBException("Write took longer than 16 cycles")
 
-        self.bus.select <= 0
+        self.bus.select.value = 0
         self._release_lock()

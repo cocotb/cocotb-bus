@@ -62,10 +62,10 @@ class BitDriver:
         # Actual thread
         while True:
             on, off = next(self._generator)
-            self._signal <= 1
+            self._signal.value = 1
             for _ in range(on):
                 await edge
-            self._signal <= 0
+            self._signal.value = 0
             for _ in range(off):
                 await edge
 
@@ -249,7 +249,7 @@ class BusDriver(Driver):
         """
         if sync:
             await RisingEdge(self.clock)
-        self.bus <= transaction
+        self.bus.value = transaction
 
     @coroutine
     async def _wait_for_signal(self, signal):

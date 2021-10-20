@@ -147,17 +147,17 @@ class AXI4Master(BusDriver):
 
             # Set the address and, if present on the bus, burst, length and
             # size
-            self.bus.AWADDR <= address
-            self.bus.AWVALID <= 1
+            self.bus.AWADDR.value = address
+            self.bus.AWVALID.value = 1
 
             if hasattr(self.bus, "AWBURST"):
-                self.bus.AWBURST <= burst.value
+                self.bus.AWBURST.value = burst.value
 
             if hasattr(self.bus, "AWLEN"):
-                self.bus.AWLEN <= length - 1
+                self.bus.AWLEN.value = length - 1
 
             if hasattr(self.bus, "AWSIZE"):
-                self.bus.AWSIZE <= size.bit_length() - 1
+                self.bus.AWSIZE.value = size.bit_length() - 1
 
             # Wait until acknowledged
             while True:
@@ -166,7 +166,7 @@ class AXI4Master(BusDriver):
                     break
                 await RisingEdge(self.clock)
             await RisingEdge(self.clock)
-            self.bus.AWVALID <= 0
+            self.bus.AWVALID.value = 0
 
     async def _send_write_data(
         self, address, data: Sequence[int], burst: AXIBurst, size: int,
@@ -223,18 +223,18 @@ class AXI4Master(BusDriver):
             for beat_num, (word, strobe) in enumerate(zip(data, strobes)):
                 await ClockCycles(self.clock, delay)
 
-                self.bus.WVALID <= 1
-                self.bus.WDATA <= mask_and_shift(word, size * 8, narrow_block)
-                self.bus.WSTRB <= mask_and_shift(strobe, size, narrow_block)
+                self.bus.WVALID.value = 1
+                self.bus.WDATA.value = mask_and_shift(word, size * 8, narrow_block)
+                self.bus.WSTRB.value = mask_and_shift(strobe, size, narrow_block)
 
                 if burst is not AXIBurst.FIXED:
                     narrow_block = (narrow_block + 1) % (wdata_bytes // size)
 
                 if hasattr(self.bus, "WLAST"):
                     if beat_num == len(data) - 1:
-                        self.bus.WLAST <= 1
+                        self.bus.WLAST.value = 1
                     else:
-                        self.bus.WLAST <= 0
+                        self.bus.WLAST.value = 0
 
                 while True:
                     await RisingEdge(self.clock)
@@ -242,7 +242,7 @@ class AXI4Master(BusDriver):
                         break
 
                 if beat_num == len(data) - 1:
-                    self.bus.WVALID <= 0
+                    self.bus.WVALID.value = 0
 
     @cocotb.coroutine
     async def write(
@@ -395,17 +395,17 @@ class AXI4Master(BusDriver):
             if sync:
                 await RisingEdge(self.clock)
 
-            self.bus.ARADDR <= address
-            self.bus.ARVALID <= 1
+            self.bus.ARADDR.value = address
+            self.bus.ARVALID.value = 1
 
             if hasattr(self.bus, "ARLEN"):
-                self.bus.ARLEN <= length - 1
+                self.bus.ARLEN.value = length - 1
 
             if hasattr(self.bus, "ARSIZE"):
-                self.bus.ARSIZE <= size.bit_length() - 1
+                self.bus.ARSIZE.value = size.bit_length() - 1
 
             if hasattr(self.bus, "ARBURST"):
-                self.bus.ARBURST <= burst.value
+                self.bus.ARBURST.value = burst.value
 
             while True:
                 await ReadOnly()
@@ -414,7 +414,7 @@ class AXI4Master(BusDriver):
                 await RisingEdge(self.clock)
 
             await RisingEdge(self.clock)
-            self.bus.ARVALID <= 0
+            self.bus.ARVALID.value = 0
 
         async with self.read_data_busy:
             data = []
@@ -610,10 +610,10 @@ class AXI4Slave(BusDriver):
 
         while True:
             while True:
-                self.bus.WREADY <= 0
+                self.bus.WREADY.value = 0
                 await ReadOnly()
                 if self.bus.AWVALID.value:
-                    self.bus.WREADY <= 1
+                    self.bus.WREADY.value = 1
                     break
                 await clock_re
 
@@ -691,18 +691,18 @@ class AXI4Slave(BusDriver):
             await clock_re
 
             while True:
-                self.bus.RVALID <= 1
+                self.bus.RVALID.value = 1
                 await ReadOnly()
                 if self.bus.RREADY.value:
                     _burst_diff = burst_length - burst_count
                     _st = _araddr + (_burst_diff * bytes_in_beat)
                     _end = _araddr + ((_burst_diff + 1) * bytes_in_beat)
                     word.buff = self._memory[_st:_end].tobytes()
-                    self.bus.RDATA <= word
+                    self.bus.RDATA.value = word
                     if burst_count == 1:
-                        self.bus.RLAST <= 1
+                        self.bus.RLAST.value = 1
                 await clock_re
                 burst_count -= 1
-                self.bus.RLAST <= 0
+                self.bus.RLAST.value = 0
                 if burst_count == 0:
                     break
