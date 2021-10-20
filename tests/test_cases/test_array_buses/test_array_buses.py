@@ -10,7 +10,7 @@ class TestDriver(BusDriver):
 
     def __init__(self, entity, name, clock, **kwargs):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
-        self.bus.valid <= 0
+        self.bus.valid.value = 0
 
     async def _driver_send(self, transaction, sync=True):
         clkedge = RisingEdge(self.clock)
@@ -18,11 +18,11 @@ class TestDriver(BusDriver):
             await clkedge
 
         self.log.info("Sending {}".format(transaction))
-        self.bus.valid <= 1
-        self.bus.data <= transaction
+        self.bus.valid.value = 1
+        self.bus.data.value = transaction
 
         await clkedge
-        self.bus.valid <= 0
+        self.bus.valid.value = 0
 
 
 class TestMonitor(BusMonitor):

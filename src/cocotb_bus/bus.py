@@ -123,7 +123,7 @@ class Bus:
                 else:
                     continue
             val = getattr(obj, attr_name)
-            hdl <= val
+            hdl.value = val
 
     def capture(self):
         """Capture the values from the bus, returning an object representing the capture.

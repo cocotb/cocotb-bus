@@ -51,9 +51,9 @@ def compare_read_values(expected_values, read_values, burst, burst_length,
 
 async def setup_dut(dut):
     cocotb.fork(Clock(dut.clk, *CLK_PERIOD).start())
-    dut.rstn <= 0
+    dut.rstn.value = 0
     await ClockCycles(dut.clk, 2)
-    dut.rstn <= 1
+    dut.rstn.value = 1
     await ClockCycles(dut.clk, 2)
 
 
@@ -480,7 +480,7 @@ async def test_read_length_mismatch(dut):
             # Override the driver's ARLEN value, forcing a wrong one
             await RisingEdge(dut.clk)
             arlen = burst_length - 1 + length_delta
-            getattr(dut, AXI_PREFIX + '_ARLEN') <= arlen
+            getattr(dut, AXI_PREFIX + '_ARLEN').value = arlen
             await axim.read(address, burst_length)
 
             raise TestFailure("Mismatch between ARLEN value ({}) and number "
