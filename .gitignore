@@ -1,0 +1,4 @@
+# ignore files created during build
+build/
+src/cocotb_bus.egg-info/
+src/cocotb_bus/_version.py
