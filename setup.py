@@ -1,25 +1,30 @@
 # Copyright cocotb contributors
 # Licensed under the Revised BSD License, see LICENSE for details.
 # SPDX-License-Identifier: BSD-3-Clause
+import pathlib
 
 from setuptools import setup, find_packages
 
 
-with open("README.md") as file:
-    long_description = file.read()
+def get_version(version_file):
+    locls = {}
+    exec(open(version_file).read(), {}, locls)
+    return locls["__version__"]
+
+
+root = pathlib.Path(__file__).parent.resolve()
+readme_file = root / "README.md"
+version_file = root / "src" / "cocotb_bus" / "_version.py"
 
 
 if __name__ == "__main__":
     setup(
         name="cocotb-bus",
-        use_scm_version=dict(
-            write_to='src/cocotb_bus/_version.py',
-            version_scheme='release-branch-semver'
-        ),
+        version=get_version(version_file),
         author="cocotb maintainers",
         author_email="cocotb@lists.librecores.org",
         description="",
-        long_description=long_description,
+        long_description=readme_file.read_text(encoding="utf-8"),
         long_description_content_type="text/markdown",
         url="https://github.com/cocotb/cocotb-bus",
         packages=find_packages("src"),
