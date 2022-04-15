@@ -67,9 +67,9 @@ class Bus:
                 signame = name + bus_separator + sig_name
             else:
                 signame = sig_name
-
+            # Signal matching on optional attributes needs to be also case insensitive
             self._entity._log.debug("Signal name {}".format(signame))
-            if hasattr(entity, signame):
+            if self._caseInsensGetattr(entity, signame) is not None:
                 self._add_signal(attr_name, signame, array_idx, case_insensitive)
             else:
                 self._entity._log.debug("Ignoring optional missing signal "
@@ -79,6 +79,7 @@ class Bus:
         for a in dir(obj):
             if a.casefold() == attr.casefold():
                 return getattr(obj, a)
+        return None
 
     def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True):
         self._entity._log.debug("Signal name {}, idx {}".format(signame, array_idx))
