@@ -569,8 +569,9 @@ class AXI4Slave(BusDriver):
         "ARID", "ARREGION", "ARLEN", "ARSIZE", "ARBURST", "ARLOCK", "ARCACHE",
         "ARPROT", "ARQOS", "RRESP"]
 
-    def __init__(self, entity, name, clock, memory, callback=None, event=None,
-                 big_endian=False, **kwargs):
+    def __init__(self, entity: SimHandleBase, name: str, clock: SimHandleBase,
+                 memory: array.array, callback=None, event=None,
+                 big_endian: Optional[bool] = False, **kwargs: Any):
 
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         self.clock = clock
@@ -589,12 +590,12 @@ class AXI4Slave(BusDriver):
         cocotb.fork(self._read_data())
         cocotb.fork(self._write_data())
 
-    def _size_to_bytes_in_beat(self, AxSIZE):
+    def _size_to_bytes_in_beat(self, AxSIZE: int) -> Optional[int]:
         if AxSIZE < 7:
             return 2 ** AxSIZE
         return None
 
-    async def _write_data(self):
+    async def _write_data(self) -> None:
         clock_re = RisingEdge(self.clock)
 
         while True:
@@ -643,7 +644,7 @@ class AXI4Slave(BusDriver):
                         break
                 await clock_re
 
-    async def _read_data(self):
+    async def _read_data(self) -> None:
         clock_re = RisingEdge(self.clock)
 
         while True:
