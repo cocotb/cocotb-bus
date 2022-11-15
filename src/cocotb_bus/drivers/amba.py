@@ -49,15 +49,15 @@ class AXI4Master(BusDriver):
     """
 
     _signals = [
-        "AWVALID", "AWADDR", "AWREADY", "AWID", "AWLEN", "AWSIZE", "AWBURST",
-        "WVALID", "WREADY", "WDATA", "WSTRB",
-        "BVALID", "BREADY", "BRESP", "BID",
-        "ARVALID", "ARADDR", "ARREADY", "ARID", "ARLEN", "ARSIZE", "ARBURST",
-        "RVALID", "RREADY", "RRESP", "RDATA", "RID", "RLAST"]
+        "AWADDR", "AWLEN", "AWSIZE", "AWBURST", "AWVALID", "AWVALID", "AWREADY"
+        "WDATA", "WSTRB", "WVALID", "WREADY", "BID", "BVALID", "BREADY",
+        "ARADDR", "ARVALID", "ARREADY", "RID", "RDATA", "RLAST", "RVALID",
+        "RREADY"]
 
-    _optional_signals = ["AWREGION", "AWLOCK", "AWCACHE", "AWPROT", "AWQOS",
-                         "WLAST",
-                         "ARREGION", "ARLOCK", "ARCACHE", "ARPROT", "ARQOS"]
+    _optional_signals = [
+        "AWREGION", "AWLOCK", "AWCACHE", "AWQOS", "WLAST", "BRESP",
+        "ARID", "ARREGION", "ARLEN", "ARSIZE", "ARPURST", "ARLOCK", "ARCACHE",
+        "ARPROT", "ARQOS", "RRESP"]
 
     def __init__(self, entity: SimHandleBase, name: str, clock: SimHandleBase,
                  **kwargs: Any):
@@ -484,13 +484,15 @@ class AXI4Master(BusDriver):
 class AXI4LiteMaster(AXI4Master):
     """AXI4-Lite Master"""
 
-    _signals = ["AWVALID", "AWADDR", "AWREADY",        # Write address channel
-                "WVALID", "WREADY", "WDATA", "WSTRB",  # Write data channel
-                "BVALID", "BREADY", "BRESP",           # Write response channel
-                "ARVALID", "ARADDR", "ARREADY",        # Read address channel
-                "RVALID", "RREADY", "RRESP", "RDATA"]  # Read data channel
+    _signals = ["AWVALID", "AWREADY", "AWADDR", "AWPROT",  # Write address channel
+                "WVALID", "WREADY", "WDATA", "WSTRB",      # Write data channel
+                "BVALID", "BREADY",                        # Write response channel
+                "ARVALID", "ARREADY", "ARADDR",            # Read address channel
+                "RVALID", "RREADY", "RDATA", "RRESP"]      # Read data channel
 
-    _optional_signals = []
+    _optional_signals = ["BRESP",   # Write response channel
+                         "ARPROT",  # Read address channel
+                         "RRESP"]   # Read data channel
 
     @cocotb.coroutine
     async def write(
@@ -558,27 +560,14 @@ class AXI4Slave(BusDriver):
     Monitors an internal memory and handles read and write requests.
     '''
     _signals = [
-        "ARREADY", "ARVALID", "ARADDR",             # Read address channel
-        "ARLEN",   "ARSIZE",  "ARBURST", "ARPROT",
+        "AWADDR", "AWLEN", "AWSIZE", "WABURST", "AWVALID", "AWVALID", "WDATA",
+        "WSTRB", "WVALID", "WREADY", "BID", "BVALID", "BREADY", "ARADDR",
+        "ARVALID", "ARREADY", "RID", "RDATA", "RLAST", "RVALID", "RREADY"]
 
-        "RREADY",  "RVALID",  "RDATA",   "RLAST",   # Read response channel
-
-        "AWREADY", "AWADDR",  "AWVALID",            # Write address channel
-        "AWPROT",  "AWSIZE",  "AWBURST", "AWLEN",
-
-        "WREADY",  "WVALID",  "WDATA",
-
-    ]
-
-    # Not currently supported by this driver
     _optional_signals = [
-        "WLAST",   "WSTRB",
-        "BVALID",  "BREADY",  "BRESP",   "RRESP",
-        "RCOUNT",  "WCOUNT",  "RACOUNT", "WACOUNT",
-        "ARLOCK",  "AWLOCK",  "ARCACHE", "AWCACHE",
-        "ARQOS",   "AWQOS",   "ARID",    "AWID",
-        "BID",     "RID",     "WID"
-    ]
+        "AWREGION", "AWLOCK", "AWCACHE", "AWQOS", "WLAST", "BRESP",
+        "ARID", "ARREGION", "ARLEN", "ARSIZE", "ARBURST", "ARLOCK", "ARCACHE",
+        "ARPROT", "ARQOS", "RRESP"]
 
     def __init__(self, entity, name, clock, memory, callback=None, event=None,
                  big_endian=False, **kwargs):
@@ -587,10 +576,10 @@ class AXI4Slave(BusDriver):
         self.clock = clock
 
         self.big_endian = big_endian
+        self.bus.AWREADY.setimmediatevalue(1)
         self.bus.ARREADY.setimmediatevalue(1)
         self.bus.RVALID.setimmediatevalue(0)
         self.bus.RLAST.setimmediatevalue(0)
-        self.bus.AWREADY.setimmediatevalue(1)
         self._memory = memory
 
         self.write_address_busy = Lock("%s_wabusy" % name)
