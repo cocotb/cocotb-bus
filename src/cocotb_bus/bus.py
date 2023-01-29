@@ -76,6 +76,10 @@ class Bus:
                                         "%s on bus %s" % (sig_name, name))
 
     def _caseInsensGetattr(self, obj, attr):
+        # dir breaks verilator, so avoid calling it if possible
+        for a in (attr, attr.upper(), attr.lower()):
+            if hasattr(obj, a):
+                return getattr(obj, a)
         for a in dir(obj):
             if a.casefold() == attr.casefold():
                 return getattr(obj, a)
