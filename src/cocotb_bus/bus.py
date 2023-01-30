@@ -7,6 +7,10 @@
 """Common bus related functionality.
 A bus is simply defined as a collection of signals.
 """
+
+import warnings
+
+import cocotb
 from cocotb.handle import _AssignmentResult
 
 def _build_sig_attr_dict(signals):
@@ -80,6 +84,12 @@ class Bus:
         for a in (attr, attr.upper(), attr.lower()):
             if hasattr(obj, a):
                 return getattr(obj, a)
+        if cocotb.SIM_NAME.lower().startswith("verilator"):
+            warnings.warn(
+                "Using dir() for case-insensitive matching;"
+                "this may trigger a known Verilator bug",
+                RuntimeWarning,
+            )
         for a in dir(obj):
             if a.casefold() == attr.casefold():
                 return getattr(obj, a)
