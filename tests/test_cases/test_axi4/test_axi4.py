@@ -50,7 +50,7 @@ def compare_read_values(expected_values, read_values, burst, burst_length,
 
 
 async def setup_dut(dut):
-    cocotb.fork(Clock(dut.clk, *CLK_PERIOD).start())
+    cocotb.start_soon(Clock(dut.clk, *CLK_PERIOD).start())
     dut.rstn.value = 0
     await ClockCycles(dut.clk, 2)
     dut.rstn.value = 1
@@ -416,11 +416,11 @@ async def test_simultaneous(dut, sync, num=5):
 
     await Combine(*writers)
 
-    readers = [cocotb.fork(axim.read(address, sync=sync))
+    readers = [cocotb.start_soon(axim.read(address, sync=sync))
                for address in addresses]
 
     dummy_addrs = [base_address + (num + i) * data_width for i in range(num)]
-    dummy_writers = [cocotb.fork(axim.write(address, value, sync=sync))
+    dummy_writers = [cocotb.start_soon(axim.write(address, value, sync=sync))
                      for address, value in zip(dummy_addrs, write_values)]
 
     read_values = []
