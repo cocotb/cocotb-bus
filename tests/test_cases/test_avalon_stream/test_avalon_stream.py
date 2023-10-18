@@ -70,7 +70,7 @@ class AvalonSTTB(object):
 
     async def initialise(self):
         self.dut.reset.value = 0
-        cocotb.fork(Clock(self.dut.clk, 10).start())
+        cocotb.start_soon(Clock(self.dut.clk, 10).start())
         for _ in range(3):
             await self.clkedge
         self.dut.reset.value = 1

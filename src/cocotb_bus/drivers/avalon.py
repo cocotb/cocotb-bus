@@ -259,7 +259,7 @@ class AvalonMemory(BusDriver):
         self._readlatency_min = readlatency_min
         self._readlatency_max = readlatency_max
         self._responses = []
-        self._coro = cocotb.fork(self._respond())
+        self._coro = cocotb.start_soon(self._respond())
 
         if hasattr(self.bus, "readdatavalid"):
             self.bus.readdatavalid.setimmediatevalue(0)
