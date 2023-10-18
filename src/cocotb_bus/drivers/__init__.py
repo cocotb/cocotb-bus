@@ -45,7 +45,7 @@ class BitDriver:
 
                     bit_driver.start((1, i % 5) for i in itertools.count())
         """
-        self._cr = cocotb.fork(self._cr_twiddler(generator=generator))
+        self._cr = cocotb.start_soon(self._cr_twiddler(generator=generator))
 
     def stop(self):
         """Stop generating data."""
