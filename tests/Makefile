@@ -27,7 +27,8 @@
 
 # Do not fail on DeprecationWarning caused by virtualenv, which might come from
 # the distutils or site modules.
-export PYTHONWARNINGS = error,ignore::DeprecationWarning:distutils,ignore::DeprecationWarning:site
+# Do not fail on DeprecationWarning caused by attrs dropping 3.6 support
+export PYTHONWARNINGS = error,ignore::DeprecationWarning:distutils,ignore::DeprecationWarning:site,ignore::DeprecationWarning:attr
 
 REGRESSIONS :=  $(shell ls test_cases/)
 
