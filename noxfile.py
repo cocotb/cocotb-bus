@@ -20,9 +20,6 @@ def doc(session: nox.Session) -> None:
 
 
 def create_env_for_docs_build(session: nox.Session) -> None:
-    # session.run(
-    #     "pip", "install", "docs/_vendor/domaintools"
-    # )  # not done in requirements.txt due to the way relative paths are handled in that file (gh-pypa/pip#8765)
     session.run("pip", "install", "-r", "docs/requirements.txt")
 
 
@@ -39,8 +36,6 @@ def docs_preview(session: nox.Session) -> None:
         # Ignore directories which cause a rebuild loop.
         "--ignore",
         "*/source/master-notes.rst",
-        "--ignore",
-        "*/doxygen/*",
         # Also watch the cocotb source directory to rebuild the API docs on
         # changes to cocotb code.
         "--watch",

@@ -16,7 +16,6 @@ import sys
 sys.path.insert(0, os.path.abspath("../sphinxext"))
 
 import cocotb_bus
-# from cocotb_bus._vendor.distutils_version import LooseVersion
 from looseversion import LooseVersion
 
 os.environ["SPHINX_BUILD"] = "1"
@@ -38,10 +37,8 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
-    "sphinxcontrib.makedomain",
     "sphinx.ext.inheritance_diagram",
     "sphinxcontrib.cairosvgconverter",
-    "breathe",
     "sphinx_issues",
     "sphinx_argparse_cli",
     "sphinxcontrib.spelling",
@@ -106,9 +103,6 @@ exclude_patterns = [
     # these are compiled into a single file at build-time,
     # so there is no need to build them separately:
     "newsfragments/*.rst",
-    # unused outputs from breathe:
-    "generated/namespacelist.rst",
-    "generated/namespace/*.rst",
 ]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
@@ -251,7 +245,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "cocotb_bus.tex", "cocotb bus Documentation", "cocotb bus contributors", "manual"),
+    ("index", "cocotb_bus.tex", "cocotb-bus Documentation", "cocotb-bus contributors", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -279,7 +273,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "cocotb_bus", "cocotb bus Documentation", ["cocotb bus contributors"], 1)]
+man_pages = [("index", "cocotb_bus", "cocotb-bus Documentation", ["cocotb-bus Contributors"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -294,10 +288,11 @@ texinfo_documents = [
     (
         "index",
         "cocotb_bus",
-        "cocotb bus Documentation",
-        "cocotb bus contributors",
+        "cocotb-bus Documentation",
+        "cocotb-bus Contributors",
         "cocotb",
-        "Coroutine Cosimulation TestBench \
+        "Bus Drivers and Monitors for the \ 
+        COroutine COsimulation TestBench \
      environment for efficient verification of RTL using Python.",
         "Miscellaneous",
     ),
@@ -316,18 +311,6 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 todo_include_todos = False
-
-# -- Extra setup for C documentation with Doxygen and breathe ------------------
-# see also https://breathe.readthedocs.io/en/latest/readthedocs.html
-# subprocess.run("doxygen", cwd="..")
-# 
-# cpp_id_attributes = ["GPI_EXPORT"]
-# breathe_projects = {"cocotb": "doxygen/_xml"}
-# breathe_default_project = "cocotb"
-# breathe_domain_by_extension = {
-#     "h": "cpp",
-# }
-# breathe_show_define_initializer = True
 
 # -- Extra setup for spelling check --------------------------------------------
 

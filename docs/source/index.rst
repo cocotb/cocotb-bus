@@ -1,6 +1,6 @@
-##################################
-welcome to cocotb-bus's documentation!
-##################################
+######################################
+Welcome to cocotb-bus's documentation!
+######################################
 
 ..
    This documentation tries to follow https://www.divio.com/blog/documentation/ (Daniele Procida)
@@ -11,9 +11,9 @@ welcome to cocotb-bus's documentation!
 
    See also https://github.com/cocotb/cocotb/wiki/Howto:-Writing-Documentation
 
-***************
+*******************
 What is cocotb-bus?
-***************
+*******************
 
 **cocotb-bus** is:
 
@@ -125,13 +125,7 @@ What is cocotb-bus?
    :name: reference
    :hidden:
 
-   building
    Python Code Library Reference <library_reference>
-   GPI Library Reference <library_reference_c>
-   simulator_support
-   platform_support
-   extensions
-   refcard
 
 .. toctree::
    :maxdepth: 1
