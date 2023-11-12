@@ -291,9 +291,9 @@ texinfo_documents = [
         "cocotb-bus Documentation",
         "cocotb-bus Contributors",
         "cocotb",
-        "Bus Drivers and Monitors for the \ 
-        COroutine COsimulation TestBench \
-     environment for efficient verification of RTL using Python.",
+        '''Bus Drivers and Monitors for the
+        COroutine COsimulation TestBench
+     environment for efficient verification of RTL using Python.''',
         "Miscellaneous",
     ),
 ]

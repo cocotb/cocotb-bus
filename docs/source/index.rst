@@ -26,11 +26,11 @@ What is cocotb-bus?
    :maxdepth: 1
    :hidden:
 
-   install
-   quickstart
    testbench_tools
 
 ..
+   install
+   quickstart
    Tutorials - lessons that take the reader by the hand through a series of steps to complete a project
    (Example: kid cooking; learning-oriented)
 
@@ -43,6 +43,7 @@ What is cocotb-bus?
    - minimum necessary explanation
    - no distractions
 
+..
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
@@ -64,6 +65,7 @@ What is cocotb-bus?
    - practical usability
    - good naming
 
+..
 .. toctree::
    :maxdepth: 1
    :caption: How-to Guides
@@ -78,9 +80,8 @@ What is cocotb-bus?
    rotating_logger
 
 .. todo::
-   - Add WaveDrom, IPython sections
-   - How to deal with existing Verification IP?
-   - Point to https://github.com/cocotb/cocotb/wiki/Code-Examples
+   - Howto use the baseclasses to create VIP
+   - Roadmap
 
 
 ..
@@ -93,6 +94,7 @@ What is cocotb-bus?
    - making connections
    - no instruction or technical description
 
+..
 .. toctree::
    :maxdepth: 1
    :caption: Key topics
@@ -102,12 +104,6 @@ What is cocotb-bus?
    install_devel
    troubleshooting
 
-.. todo::
-   - Move section "How does cocotb work?" from Introduction to here
-   - Add some info from :doc:`coroutines`
-   - Add GPI section
-   - Explain ``ReadOnly``, ``ReadWrite``, ... phases
-   - Add pitfall from https://github.com/cocotb/cocotb/issues/526#issuecomment-300371629 to troubleshooting
 
 
 ..
@@ -119,6 +115,7 @@ What is cocotb-bus?
    - description
    - accuracy
 
+..
 .. toctree::
    :maxdepth: 1
    :caption: Reference
@@ -127,6 +124,7 @@ What is cocotb-bus?
 
    Python Code Library Reference <library_reference>
 
+..
 .. toctree::
    :maxdepth: 1
    :caption: Development & Community
@@ -137,7 +135,7 @@ What is cocotb-bus?
    contributors
    release_notes
    further_resources
-
+..
 .. todo::
    - Add "Join us online" and "Contributing"
    - In Contributing, add explanation on how to provide a PR, how to test existing PRs, etc.
