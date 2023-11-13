@@ -1,3 +1,6 @@
 # ignore files created during build
 build/
 src/cocotb_bus.egg-info/
+*.vcd
+*.xml
+sim_build
