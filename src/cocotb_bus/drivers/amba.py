@@ -301,7 +301,7 @@ class AXI4Master(BusDriver):
         write_data = self._send_write_data(address, value, burst, size,
                                            data_latency, byte_enable, sync)
 
-        await Combine(cocotb.fork(write_address), cocotb.fork(write_data))
+        await Combine(cocotb.start_soon(write_address), cocotb.fork(write_data))
 
         async with self.write_response_busy:
             # Wait for the response
@@ -597,8 +597,8 @@ class AXI4Slave(BusDriver):
         self.read_address_busy = Lock("%s_rabusy" % name)
         self.write_data_busy = Lock("%s_wbusy" % name)
 
-        cocotb.fork(self._read_data())
-        cocotb.fork(self._write_data())
+        cocotb.start_soon(self._read_data())
+        cocotb.start_soon(self._write_data())
 
     def _size_to_bytes_in_beat(self, AxSIZE):
         if AxSIZE < 7:

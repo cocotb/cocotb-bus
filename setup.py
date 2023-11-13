@@ -30,7 +30,7 @@ if __name__ == "__main__":
         packages=find_packages("src"),
         package_dir={"": "src"},
         install_requires=[
-            "cocotb>=1.5.0.dev,<2.0"
+            "cocotb>=1.6.0,<=2.0.0.dev"
         ],
         python_requires='>=3.5'
     )

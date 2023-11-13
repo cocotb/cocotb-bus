@@ -136,7 +136,7 @@ class DFF_TB(object):
 async def run_test(dut):
     """Setup testbench and run a test."""
 
-    cocotb.fork(Clock(dut.c, 10, 'us').start(start_high=False))
+    cocotb.start_soon(Clock(dut.c, 10, 'us').start(start_high=False))
 
     tb = DFF_TB(dut, init_val=BinaryValue(0))
 
