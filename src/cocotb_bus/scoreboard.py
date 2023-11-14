@@ -8,12 +8,12 @@
 
 import logging
 
-from cocotb.utils import hexdump, hexdiffs
 from cocotb.log import SimLog
-from cocotb.result import TestFailure, TestSuccess
+from cocotb.result import TestSuccess
 
 from cocotb_bus.monitors import Monitor
 
+from scapy.utils import hexdump, hexdiff
 
 class Scoreboard:
     """Generic scoreboarding class.
@@ -32,7 +32,7 @@ class Scoreboard:
             of the expected result list as passing matches.
             Default is 0, meaning only the first element in the expected result list
             is considered for a passing match.
-        fail_immediately (bool, optional): Raise :any:`TestFailure`
+        fail_immediately (bool, optional): Raise :exc:`AssertionError`
             immediately when something is wrong instead of just
             recording an error. Default is ``True``.
     """
@@ -48,9 +48,9 @@ class Scoreboard:
     def result(self):
         """Determine the test result, do we have any pending data remaining?
 
-        Returns:
-            :any:`TestFailure`: If not all expected output was received or
-            error were recorded during the test.
+        Raises:
+            :exc:`AssertionError`: If not all expected output was received or
+                error were recorded during the test.
         """
         fail = False
         for monitor, expected_output in self.expected.items():
@@ -70,10 +70,8 @@ class Scoreboard:
                                       (len(expected_output) - index - 1))
                         break
                 fail = True
-        if fail:
-            return TestFailure("Not all expected output was received")
-        if self.errors:
-            return TestFailure("Errors were recorded during the test")
+        assert not fail, "Not all expected output was received"
+        assert not self.errors, "Errors were recorded during the test"
         return TestSuccess()
 
     def compare(self, got, exp, log, strict_type=True):
@@ -89,7 +87,7 @@ class Scoreboard:
                 exactly if ``True``, otherwise compare its string representation.
 
         Raises:
-            :any:`TestFailure`: If received transaction differed from
+            :exc:`AssertionError`: If received transaction differed from
                 expected transaction when :attr:`fail_immediately` is ``True``.
                 If *strict_type* is ``True``,
                 also the transaction type must match.
@@ -102,8 +100,10 @@ class Scoreboard:
             log.info("Received: %s but expected %s" %
                      (str(type(got)), str(type(exp))))
             if self._imm:
-                raise TestFailure("Received transaction of wrong type. "
-                                  "Set strict_type=False to avoid this.")
+                assert False, (
+                    "Received transaction of wrong type. "
+                    "Set strict_type=False to avoid this."
+                )
             return
         # Or convert to a string before comparison
         elif not strict_type:
@@ -137,10 +137,12 @@ class Scoreboard:
                         log.info(str(word))
                 except Exception:
                     pass
-            log.warning("Difference:\n%s" % hexdiffs(strexp, strgot))
+            log.warning("Difference:\n%s" % hexdiff(strexp, strgot))
             if self._imm:
-                raise TestFailure("Received transaction differed from expected "
-                                  "transaction")
+                assert False, (
+                    "Received transaction differed from expected "
+                    "transaction"
+                )
         else:
             # Don't want to fail the test
             # if we're passed something without __len__
@@ -172,7 +174,7 @@ class Scoreboard:
                 exactly if ``True``, otherwise compare its string representation.
 
         Raises:
-            :any:`TypeError`: If no monitor is on the interface or
+            :exc:`TypeError`: If no monitor is on the interface or
                 *compare_fn* is not a callable function.
         """
         # save a handle to the expected output so we can check if all expected
@@ -220,8 +222,10 @@ class Scoreboard:
                           "anything")
                 log.info("Got: %s" % (hexdump(str(transaction))))
                 if self._imm:
-                    raise TestFailure("Received a transaction but wasn't "
-                                      "expecting anything")
+                    assert False, (
+                        "Received a transaction but wasn't "
+                        "expecting anything"
+                    )
                 return
 
             self.compare(transaction, exp, log, strict_type=strict_type)

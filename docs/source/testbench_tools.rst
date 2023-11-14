@@ -5,9 +5,11 @@ Testbench Tools
 Buses
 =====
 
-Buses are simply defined as collection of signals. The :class:`.Bus` class
-will automatically bundle any group of signals together that are named similar
-to ``dut.<bus_name><separator><signal_name>``. For instance,
+Buses are simply defined as collection of signals.
+The :class:`.Bus` class will automatically bundle any group of signals together
+that are named similar
+to ``dut.<bus_name><separator><signal_name>``.
+For instance,
 
 .. code-block:: python3
 
@@ -16,13 +18,13 @@ to ``dut.<bus_name><separator><signal_name>``. For instance,
 
 have a bus name of ``stream_in``, a separator of ``_``, and signal names of
 ``valid`` and ``data``. A list of signal names, or a dictionary mapping attribute
-names to signal names is also passed into the :class:`.Bus` class. Buses can
-have values driven onto them, be captured (returning a dictionary), or sampled
-and stored into a similar object.
+names to signal names is also passed into the :class:`.Bus` class.
+Buses can have values driven onto them, be captured (returning a dictionary),
+or sampled and stored into a similar object.
 
 .. code-block:: python3
 
-     stream_in_bus = Bus(dut, "stream_in", ["valid", "data"]) # '_' is the default separator
+     stream_in_bus = Bus(dut, "stream_in", ["valid", "data"])  # '_' is the default separator
 
 
 Driving Buses
@@ -31,10 +33,14 @@ Driving Buses
 Examples and specific bus implementation bus drivers (AMBA, Avalon, XGMII, and
 others) exist in the :class:`.Driver` class enabling a test to append
 transactions to perform the serialization of transactions onto a physical
-interface. Here is an example using the Avalon bus driver in the ``endian_swapper``
-example:
+interface.
+Here is an example using the :class:`~cocotb_bus.drivers.avalon.AvalonST` bus driver
+in the ``endian_swapper`` example:
 
 .. code-block:: python3
+
+    from cocotb_bus.drivers.avalon import AvalonST as AvalonSTDriver
+
 
     class EndianSwapperTB(object):
 
@@ -42,14 +48,15 @@ example:
             self.dut = dut
             self.stream_in = AvalonSTDriver(dut, "stream_in", dut.clk)
 
-    async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
-                 backpressure_inserter=None):
 
-        cocotb.fork(Clock(dut.clk, 5000).start())
+    async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
+                       backpressure_inserter=None):
+
+        cocotb.start_soon(Clock(dut.clk, (5000, "ns")).start())
         tb = EndianSwapperTB(dut)
 
         await tb.reset()
-        dut.stream_out_ready <= 1
+        dut.stream_out_ready.value = 1
 
         if idle_inserter is not None:
             tb.stream_in.set_valid_generator(idle_inserter())
@@ -66,21 +73,29 @@ For our testbenches to actually be useful, we have to monitor some of these
 buses, and not just drive them. That's where the :class:`.Monitor` class
 comes in, with pre-built monitors for Avalon and XGMII buses. The
 Monitor class is a base class which you are expected to derive for your
-particular purpose. You must create a :any:`_monitor_recv()` function which is
-responsible for determining 1) at what points in simulation to call the
-:any:`_recv()` function, and 2) what transaction values to pass to be stored in the
-monitors receiving queue. Monitors are good for both outputs of the :term:`DUT` for
-verification, and for the inputs of the :term:`DUT`, to drive a test model of the :term:`DUT`
-to be compared to the actual :term:`DUT`. For this purpose, input monitors will often
+particular purpose.
+
+You must create a :func:`~cocotb_bus.monitors.Monitor._monitor_recv()` function
+which is responsible for determining
+
+1) at what points in time in the simulation to call the
+   :func:`~cocotb_bus.monitors.Monitor._recv()` function,
+   and
+
+2) what transaction values to pass to be stored in the monitor's receiving queue.
+
+Monitors are good for both outputs of the :term:`DUT` for
+verification, and for the inputs of the DUT, to drive a test model of the DUT
+to be compared to the actual DUT. For this purpose, input monitors will often
 have a callback function passed that is a model. This model will often generate
 expected transactions, which are then compared using the :class:`.Scoreboard`
 class.
 
 .. code-block:: python3
 
-    # ==============================================================================
     class BitMonitor(Monitor):
-        """Observes single input or output of DUT."""
+        """Observe single input or output of DUT."""
+
         def __init__(self, name, signal, clock, callback=None, event=None):
             self.name = name
             self.signal = signal
@@ -96,13 +111,13 @@ class.
                 vec = self.signal.value
                 self._recv(vec)
 
-    # ==============================================================================
+
     def input_gen():
         """Generator for input data applied by BitDriver"""
         while True:
             yield random.randint(1,5), random.randint(1,5)
 
-    # ==============================================================================
+
     class DFF_TB(object):
         def __init__(self, dut, init_val):
 
@@ -127,14 +142,17 @@ class.
                 self.expected_output.append(transaction)
 
 
-Tracking testbench errors
+Tracking Testbench Errors
 =========================
 
 The :class:`.Scoreboard` class is used to compare the actual outputs to
 expected outputs. Monitors are added to the scoreboard for the actual outputs,
 and the expected outputs can be either a simple list, or a function that
-provides a transaction. Here is some code from the ``dff`` example, similar to
-above with the scoreboard added.
+provides a transaction.
+
+Here is some code from the ``dff`` example,
+similar to the above,
+with the scoreboard added.
 
 .. code-block:: python3
 
@@ -153,4 +171,4 @@ above with the scoreboard added.
 
             # Reconstruct the input transactions from the pins
             # and send them to our 'model'
-            self.input_mon = BitMonitor("input", dut.d, dut.c,callback=self.model)
+            self.input_mon = BitMonitor("input", dut.d, dut.c, callback=self.model)

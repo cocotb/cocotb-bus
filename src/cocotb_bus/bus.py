@@ -19,7 +19,7 @@ def _build_sig_attr_dict(signals):
 class Bus:
     """Wraps up a collection of signals.
 
-    Assumes we have a set of signals/nets named ``entity.<bus_name><separator><signal>``.
+    Assumes we have a set of signals/nets named ``entity.<bus_name><bus_separator><signal>``.
 
     For example a bus ``stream_in`` with signals ``valid`` and ``data`` is assumed
     to be named ``dut.stream_in_valid`` and ``dut.stream_in_data`` (with
@@ -32,7 +32,7 @@ class Bus:
     def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None):
         """
         Args:
-            entity (SimHandle): :any:`SimHandle` instance to the entity containing the bus.
+            entity (SimHandle): :class:`SimHandle` instance to the entity containing the bus.
             name (str): Name of the bus. ``None`` for a nameless bus, e.g. bus-signals
                 in an interface or a ``modport`` (untested on ``struct``/``record``,
                 but could work here as well).

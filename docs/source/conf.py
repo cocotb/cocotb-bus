@@ -48,10 +48,10 @@ extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "cocotb": ("https://docs.cocotb.org/en/latest/", None),
     "ghdl": ("https://ghdl.github.io/ghdl", None),
     "scapy": ("https://scapy.readthedocs.io/en/latest", None),
     "pytest": ("https://docs.pytest.org/en/latest/", None),
-    #"cocotb": ("https://docs.cocotb.org/en/latest/", None),
 }
 
 # Github repo
@@ -71,7 +71,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "cocotb-bus"
-copyright = "2014-{0}, cocotb contributors".format(datetime.datetime.now().year)
+copyright = "2014-{0}, cocotb-bus contributors".format(datetime.datetime.now().year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
