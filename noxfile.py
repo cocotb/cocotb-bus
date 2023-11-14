@@ -8,19 +8,19 @@ def tests(session):
     session.run("make", external=True)
 
 
+def create_env_for_docs_build(session: nox.Session) -> None:
+    session.run("pip", "install", "-r", "docs/requirements.txt")
+
+
 @nox.session
-def doc(session: nox.Session) -> None:
+def docs(session: nox.Session) -> None:
+    """Invoke sphinx-build to build the HTML docs"""
     create_env_for_docs_build(session)
     session.run("pip", "install", ".")
     outdir = session.cache_dir / "docs_out"
-    session.run("sphinx-build", "./docs/source",
-                str(outdir), "--color", "-b", "html")
+    session.run("sphinx-build", "./docs/source", str(outdir), "--color", "-b", "html")
     index = (outdir / "index.html").resolve().as_uri()
     session.log(f"Documentation is available at {index}")
-
-
-def create_env_for_docs_build(session: nox.Session) -> None:
-    session.run("pip", "install", "-r", "docs/requirements.txt")
 
 
 @nox.session
@@ -36,10 +36,10 @@ def docs_preview(session: nox.Session) -> None:
         # Ignore directories which cause a rebuild loop.
         "--ignore",
         "*/source/master-notes.rst",
-        # Also watch the cocotb source directory to rebuild the API docs on
-        # changes to cocotb code.
+        # Also watch the cocotb_bus source directory to rebuild the API docs on
+        # changes to cocotb_bus code.
         "--watch",
-        "cocotb_bus",
+        "src/cocotb_bus",
         "./docs/source",
         str(outdir),
     )
@@ -47,7 +47,7 @@ def docs_preview(session: nox.Session) -> None:
 
 @nox.session
 def docs_linkcheck(session: nox.Session) -> None:
-    """invoke sphinx-build to linkcheck the docs"""
+    """Invoke sphinx-build to linkcheck the docs"""
     create_env_for_docs_build(session)
     session.run("pip", "install", ".")
     outdir = session.cache_dir / "docs_out"
@@ -63,7 +63,7 @@ def docs_linkcheck(session: nox.Session) -> None:
 
 @nox.session
 def docs_spelling(session: nox.Session) -> None:
-    """invoke sphinx-build to spellcheck the docs"""
+    """Invoke sphinx-build to spellcheck the docs"""
     create_env_for_docs_build(session)
     session.run("pip", "install", ".")
     outdir = session.cache_dir / "docs_out"

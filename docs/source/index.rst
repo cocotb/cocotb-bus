@@ -15,11 +15,14 @@ Welcome to cocotb-bus's documentation!
 What is cocotb-bus?
 *******************
 
-**cocotb-bus** is:
+**cocotb-bus** consists of pre-packaged testbenching tools and reusable bus interfaces
+for https://cocotb.org.
 
-* A set of Driver's & Monitor base classes to assist in creating cocotb VIP's.
-* An implementation of scoreboard class for cocotb.
-* Sample implementation of Protocol Bus drivers using these classes.
+A bit more detailed, cocotb-bus is:
+
+* A set of Driver & Monitor base classes to assist in creating cocotb VIPs.
+* An implementation of a scoreboard class for cocotb.
+* Sample implementation of protocol bus drivers using these classes.
 
 
 .. toctree::
@@ -44,13 +47,13 @@ What is cocotb-bus?
    - no distractions
 
 ..
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
-   :name: tutorials
-   :hidden:
+   .. toctree::
+      :maxdepth: 1
+      :caption: Tutorials
+      :name: tutorials
+      :hidden:
 
-   examples
+      examples
 
 
 ..
@@ -66,18 +69,18 @@ What is cocotb-bus?
    - good naming
 
 ..
-.. toctree::
-   :maxdepth: 1
-   :caption: How-to Guides
-   :name: howto_guides
-   :hidden:
+   .. toctree::
+      :maxdepth: 1
+      :caption: How-to Guides
+      :name: howto_guides
+      :hidden:
 
-   writing_testbenches
-   runner
-   coroutines
-   triggers
-   custom_flows
-   rotating_logger
+      writing_testbenches
+      runner
+      coroutines
+      triggers
+      custom_flows
+      rotating_logger
 
 .. todo::
    - Howto use the baseclasses to create VIP
@@ -95,14 +98,14 @@ What is cocotb-bus?
    - no instruction or technical description
 
 ..
-.. toctree::
-   :maxdepth: 1
-   :caption: Key topics
-   :name: key_topics
-   :hidden:
+   .. toctree::
+      :maxdepth: 1
+      :caption: Key topics
+      :name: key_topics
+      :hidden:
 
-   install_devel
-   troubleshooting
+      install_devel
+      troubleshooting
 
 
 
@@ -124,18 +127,18 @@ What is cocotb-bus?
 
    Python Code Library Reference <library_reference>
 
-..
 .. toctree::
    :maxdepth: 1
    :caption: Development & Community
    :name: development_community
    :hidden:
 
-   roadmap
-   contributors
    release_notes
-   further_resources
 ..
+      roadmap
+      contributors
+      further_resources
+
 .. todo::
    - Add "Join us online" and "Contributing"
    - In Contributing, add explanation on how to provide a PR, how to test existing PRs, etc.
@@ -148,5 +151,6 @@ What is cocotb-bus?
    :hidden:
 
    Classes, Methods, Variables etc. <genindex>
-   Python Modules <py-modindex>
    glossary
+..
+   Python Modules <py-modindex>
