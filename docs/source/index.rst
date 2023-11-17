@@ -1,6 +1,6 @@
-######################################
+**************************************
 Welcome to cocotb-bus's documentation!
-######################################
+**************************************
 
 ..
    This documentation tries to follow https://www.divio.com/blog/documentation/ (Daniele Procida)
@@ -11,9 +11,8 @@ Welcome to cocotb-bus's documentation!
 
    See also https://github.com/cocotb/cocotb/wiki/Howto:-Writing-Documentation
 
-*******************
 What is cocotb-bus?
-*******************
+===================
 
 **cocotb-bus** consists of pre-packaged testbenching tools and reusable bus interfaces
 for https://cocotb.org.
@@ -23,6 +22,14 @@ A bit more detailed, cocotb-bus is:
 * A set of Driver & Monitor base classes to assist in creating cocotb VIPs.
 * An implementation of a scoreboard class for cocotb.
 * Sample implementation of protocol bus drivers using these classes.
+
+Dependencies
+------------
+
+In addition to what cocotb itself requires,
+cocotb-bus has a dependency on ``scapy`` (https://scapy.readthedocs.io/)
+for its :func:`scapy.utils.hexdump` and :func:`scapy.utils.hexdiff` functions
+used in the :mod:`.scoreboard`.
 
 
 .. toctree::
