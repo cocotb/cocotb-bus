@@ -76,7 +76,7 @@ class Bus:
                                         "%s on bus %s" % (sig_name, name))
 
     def _caseInsensGetattr(self, obj, attr):
-        for a in dir(obj):
+        for a in vars(obj):
             if a.casefold() == attr.casefold():
                 return getattr(obj, a)
         return None
