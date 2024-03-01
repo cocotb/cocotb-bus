@@ -23,24 +23,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        python-version: ["3.6", "3.12"]
         include:
         - sim: icarus
           sim-version: apt
           lang: verilog
-          python-version: 3.6
-          os: ubuntu-20.04
+          os: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: ${{matrix.python-version}}
     - name: Install cocotb requirements
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo apt install -y g++ make
+        sudo apt-get update
+        sudo apt-get install --yes g++ make
     - name: Set up Icarus (apt)
       if: matrix.sim == 'icarus' && matrix.sim-version == 'apt'
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo apt install -y iverilog
+        sudo apt-get install --yes iverilog
     - name: Install testing requirements
       run: |
         pip install nox
