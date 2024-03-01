@@ -5,21 +5,29 @@ name: Tests
 
 on:
   push:
-    branches:
-      - master
-      - 'stable/**'
+    # branches:
+    #   - master
+    #   - 'stable/**'
   pull_request:
     branches:
       - master
       - 'stable/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
-    name: ${{matrix.extra_name}}${{matrix.sim}} (${{matrix.sim-version}}) | ${{matrix.os}} | Python ${{matrix.python-version}} ${{matrix.may_fail && '| May Fail' || ''}}
-    runs-on: ${{matrix.os}}
+    # Run on external PRs, but not on internal PRs (since that would duplicate push-triggered runs)
+    if:
+      github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    name: ${{ matrix.extra_name }}${{ matrix.sim }} (${{ matrix.sim-version }}) | ${{ matrix.os }} | Python ${{ matrix.python-version }} ${{ matrix.may_fail && '| May Fail' || '' }}
+    runs-on: ${{ matrix.os }}
     env:
-      SIM: ${{matrix.sim}}
-      TOPLEVEL_LANG: ${{matrix.lang}}
+      SIM: ${{ matrix.sim }}
+      TOPLEVEL_LANG: ${{ matrix.lang }}
     strategy:
       fail-fast: false
       matrix:
@@ -27,13 +35,14 @@ jobs:
         include:
         - sim: icarus
           sim-version: apt
+          # python-version: "3.6"
           lang: verilog
-          os: ubuntu-22.04
+          os: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
-        python-version: ${{matrix.python-version}}
+        python-version: ${{ matrix.python-version }}
     - name: Install cocotb requirements
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -45,11 +54,11 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo apt-get install --yes iverilog
+        sudo apt-get install --yes --no-install-recommends iverilog
     - name: Install testing requirements
       run: |
         pip install nox
     - name: Run tests
-      continue-on-error: ${{matrix.may_fail || false}}
+      continue-on-error: ${{ matrix.may_fail || false }}
       run: |
         nox -e tests
