@@ -29,7 +29,7 @@ class Bus:
         Support for ``struct``/``record`` ports where signals are member names.
     """
 
-    def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None):
+    def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=False, array_idx=None):
         """
         Args:
             entity (SimHandle): :class:`SimHandle` instance to the entity containing the bus.
@@ -47,7 +47,7 @@ class Bus:
             bus_separator (str, optional): Character(s) to use as separator between bus
                 name and signal name. Defaults to '_'.
             case_insensitive (bool, optional): Perform case-insensitive match on signal names.
-                Defaults to True.
+                Defaults to False.
             array_idx (int or None, optional): Optional index when signal is an array.
         """
         self._entity = entity
@@ -81,7 +81,7 @@ class Bus:
                 return getattr(obj, a)
         return None
 
-    def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True):
+    def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=False):
         self._entity._log.debug("Signal name {}, idx {}".format(signame, array_idx))
         if case_insensitive:
             handle = self._caseInsensGetattr(self._entity, signame)
