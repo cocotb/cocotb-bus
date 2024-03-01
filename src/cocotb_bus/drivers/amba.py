@@ -301,7 +301,7 @@ class AXI4Master(BusDriver):
         write_data = self._send_write_data(address, value, burst, size,
                                            data_latency, byte_enable, sync)
 
-        await Combine(cocotb.start_soon(write_address), cocotb.fork(write_data))
+        await Combine(cocotb.start_soon(write_address), cocotb.start_soon(write_data))
 
         async with self.write_response_busy:
             # Wait for the response
