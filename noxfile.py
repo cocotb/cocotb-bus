@@ -2,7 +2,7 @@ import nox
 
 
 @nox.session
-@nox.parametrize("cocotb", ["1.6.0", "1.8.1"])
+@nox.parametrize("cocotb", ["1.6.0", "1.9.0"])
 def tests(session, cocotb):
     session.install("pytest", "coverage", f"cocotb=={cocotb}")
     session.install(".")
