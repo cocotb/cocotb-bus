@@ -27,12 +27,12 @@ async def write_address_0(dut):
     """
 
     # Reset
-    dut.rst <= 1
-    dut.test_id <= 0
+    dut.rst.value = 1
+    dut.test_id.value = 0
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
-    dut.rst <= 0
+    dut.rst.value = 0
 
     ADDRESS = 0x00
     DATA = 0xAB
@@ -59,17 +59,17 @@ async def read_address_4(dut):
         The value read from the register is the same as the value written.
     """
     # Reset
-    dut.rst <= 1
-    dut.test_id <= 1
+    dut.rst.value = 1
+    dut.test_id.value = 1
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
-    dut.rst <= 0
+    dut.rst.value = 0
     await Timer(CLK_PERIOD_NS, units='ns')
     ADDRESS = 0x04
     DATA = 0xCD
 
-    dut.dut.r_temp_1 <= DATA
+    dut.dut.r_temp_1.value = DATA
     await Timer(CLK_PERIOD_NS * 10, units='ns')
 
     value = await axim.read(ADDRESS)
@@ -92,12 +92,12 @@ async def write_and_read(dut):
     """
 
     # Reset
-    dut.rst <= 1
-    dut.test_id <= 2
+    dut.rst.value = 1
+    dut.test_id.value = 2
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
-    dut.rst <= 0
+    dut.rst.value = 0
 
     ADDRESS = 0x00
     DATA = 0xAB
@@ -127,12 +127,12 @@ async def write_fail(dut):
         the user attempted to write to an invalid address.
     """
     # Reset
-    dut.rst <= 1
-    dut.test_id <= 3
+    dut.rst.value = 1
+    dut.test_id.value = 3
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
-    dut.rst <= 0
+    dut.rst.value = 0
 
     ADDRESS = 0x08
     DATA = 0xAB
@@ -158,12 +158,12 @@ async def read_fail(dut):
         the user attempted to read from an invalid address.
     """
     # Reset
-    dut.rst <= 1
-    dut.test_id <= 4
+    dut.rst.value = 1
+    dut.test_id.value = 4
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
-    dut.rst <= 0
+    dut.rst.value = 0
 
     ADDRESS = 0x08
     DATA = 0xAB
