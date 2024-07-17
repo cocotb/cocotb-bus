@@ -8,8 +8,9 @@
 import struct
 import zlib
 
+from scapy.utils import hexdump
+
 from cocotb.triggers import RisingEdge
-from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.handle import SimHandleBase
 
