@@ -15,7 +15,8 @@ except ImportError:
 import struct
 import zlib
 
-from cocotb.utils import hexdump
+from scapy.utils import hexdump
+
 from cocotb.triggers import RisingEdge
 
 from cocotb_bus.monitors import Monitor

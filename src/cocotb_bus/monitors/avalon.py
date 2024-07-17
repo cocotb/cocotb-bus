@@ -13,7 +13,8 @@ NB Currently we only support a very small subset of functionality.
 
 import warnings
 
-from cocotb.utils import hexdump
+from scapy.utils import hexdump
+
 from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
 
@@ -190,7 +191,7 @@ class AvalonSTPkts(BusMonitor):
 
                 if self.bus.endofpacket.value:
                     self.log.info("Received a packet of %d bytes", len(pkt))
-                    self.log.debug(hexdump(pkt))
+                    # self.log.debug("Packet:", hexdump(pkt))
                     self.channel = channel
                     if self.report_channel:
                         self._recv({"data": pkt, "channel": channel})
