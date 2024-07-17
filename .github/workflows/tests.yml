@@ -1,50 +1,62 @@
 # Copyright cocotb contributors
 # Licensed under the Revised BSD License, see LICENSE for details.
 # SPDX-License-Identifier: BSD-3-Clause
+
 name: Tests
 
 on:
-  push:
-    branches:
-      - master
-      - 'stable/**'
   pull_request:
     branches:
       - master
       - 'stable/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
-    name: ${{matrix.extra_name}}${{matrix.sim}} (${{matrix.sim-version}}) | ${{matrix.os}} | Python ${{matrix.python-version}} ${{matrix.may_fail && '| May Fail' || ''}}
-    runs-on: ${{matrix.os}}
+    name: ${{ matrix.extra_name }}cocotb ${{matrix.cocotb-version }} | ${{ matrix.sim }} (${{ matrix.sim-version }}) | ${{ matrix.os }} | Python ${{ matrix.python-version }} ${{ matrix.may_fail && '| May Fail' || '' }}
+    runs-on: ${{ matrix.os }}
     env:
-      SIM: ${{matrix.sim}}
-      TOPLEVEL_LANG: ${{matrix.lang}}
+      SIM: ${{ matrix.sim }}
+      TOPLEVEL_LANG: ${{ matrix.lang }}
     strategy:
       fail-fast: false
       matrix:
+        python-version: ["3.6", "3.12"]
+        # NOTE: align with versions in noxfile.py:
+        cocotb-version: ["1.6.0", "1.9.0"]
         include:
         - sim: icarus
           sim-version: apt
           lang: verilog
-          python-version: 3.6
           os: ubuntu-20.04
+    timeout-minutes: 10
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
-        python-version: ${{matrix.python-version}}
+        python-version: ${{ matrix.python-version }}
     - name: Install cocotb requirements
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo apt install -y g++ make
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends g++ make
     - name: Set up Icarus (apt)
       if: matrix.sim == 'icarus' && matrix.sim-version == 'apt'
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo apt install -y iverilog
+        sudo apt-get install --yes --no-install-recommends iverilog
     - name: Install testing requirements
       run: |
-        pip install nox
+        python -m pip install nox
     - name: Run tests
-      continue-on-error: ${{matrix.may_fail || false}}
+      env:
+        COCOTB_ANSI_OUTPUT: 1
+      continue-on-error: ${{ matrix.may_fail || false }}
       run: |
-        nox -e tests
+        nox --session "tests(cocotb='${{ matrix.cocotb-version }}')"

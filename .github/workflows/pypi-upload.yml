@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     name: deploy
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
       with:
         # To generate a valid version number setuptools_scm needs sufficient
         # git history.
         fetch-depth: 0
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.12"
     - name: Install pypa/build
       run: >-
         python -m
