@@ -186,11 +186,11 @@ class EndianSwapperTB(object):
 
     async def reset(self, duration=20):
         self.dut._log.debug("Resetting DUT")
-        self.dut.reset_n <= 0
-        self.stream_in.bus.valid <= 0
+        self.dut.reset_n.value = 0
+        self.stream_in.bus.valid.value = 0
         await Timer(duration, units='ns')
         await RisingEdge(self.dut.clk)
-        self.dut.reset_n <= 1
+        self.dut.reset_n.value = 1
         self.dut._log.debug("Out of reset")
 
 
@@ -201,7 +201,7 @@ async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
     tb = EndianSwapperTB(dut)
 
     await tb.reset()
-    dut.stream_out_ready <= 1
+    dut.stream_out_ready.value = 1
 
     # Start off any optional coroutines
     if config_coroutine is not None:

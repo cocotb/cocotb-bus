@@ -38,19 +38,19 @@ async def value_test(dut, nums):
 
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, units='ns').start())
 
-    dut.rst <= 1
+    dut.rst.value = 1
     for i in range(BUS_WIDTH):
-        dut.i_data[i] <= 0
-    dut.i_valid <= 0
+        dut.i_data[i].value = 0
+    dut.i_valid.value = 0
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
-    dut.rst <= 0
+    dut.rst.value = 0
 
     for i in range(BUS_WIDTH):
-        dut.i_data[i] <= nums[i]
-    dut.i_valid <= 1
+        dut.i_data[i].value = nums[i]
+    dut.i_valid.value = 1
     await RisingEdge(dut.clk)
-    dut.i_valid <= 0
+    dut.i_valid.value = 0
     await RisingEdge(dut.clk)
     got = int(dut.o_data.value)
 
@@ -104,26 +104,26 @@ async def mean_randomised_test(dut):
 
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, units='ns').start())
 
-    dut.rst <= 1
+    dut.rst.value = 1
     for i in range(BUS_WIDTH):
-        dut.i_data[i] <= 0
-    dut.i_valid <= 0
+        dut.i_data[i].value = 0
+    dut.i_valid.value = 0
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
-    dut.rst <= 0
+    dut.rst.value = 0
 
     for j in range(10):
         nums = []
         for i in range(BUS_WIDTH):
             x = random.randint(0, 2**DATA_WIDTH - 1)
-            dut.i_data[i] <= x
+            dut.i_data[i].value = x
             nums.append(x)
-        dut.i_valid <= 1
+        dut.i_valid.value = 1
 
         nums_mean = sum(nums) // BUS_WIDTH
         exp_out.append(nums_mean)
         await RisingEdge(dut.clk)
-        dut.i_valid <= 0
+        dut.i_valid.value = 0
 
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
