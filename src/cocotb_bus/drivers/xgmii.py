@@ -163,7 +163,7 @@ class XGMII(Driver):
         pkt = self.layer1(bytes(pkt))
 
         self.log.debug("Sending packet of length %d bytes" % len(pkt))
-        self.log.debug(hexdump(pkt))
+        self.log.debug(f"Sending Packet:\n{hexdump(pkt, dump=True)}")
 
         clkedge = RisingEdge(self.clock)
         if sync:
