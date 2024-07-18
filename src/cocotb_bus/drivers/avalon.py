@@ -791,7 +791,7 @@ class AvalonSTPkts(ValidatedBusDriver):
         # Avoid spurious object creation by recycling
         if isinstance(pkt, bytes):
             self.log.debug("Sending packet of length %d bytes", len(pkt))
-            self.log.debug("Packet:", hexdump(pkt))
+            self.log.debug(f"Sending Packet:\n{hexdump(pkt, dump=True)}")
             await self._send_string(pkt, sync=sync, channel=channel)
             self.log.debug("Successfully sent packet of length %d bytes", len(pkt))
         elif isinstance(pkt, str):

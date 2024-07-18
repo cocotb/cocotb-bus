@@ -128,7 +128,7 @@ class XGMII(Monitor):
 
             if self._pkt:
 
-                self.log.debug("Received:\n%s" % (hexdump(self._pkt)))
+                self.log.debug("Received:\n%s" % (hexdump(self._pkt, dump=True)))
 
                 if len(self._pkt) < 64 + 7:
                     self.log.error("Received a runt frame!")
@@ -143,7 +143,7 @@ class XGMII(Monitor):
 
                 if preamble_sfd != _PREAMBLE_SFD:
                     self.log.error("Got a frame with unknown preamble/SFD")
-                    self.log.error(hexdump(preamble_sfd))
+                    self.log.error(hexdump(preamble_sfd, dump=True))
                     self._pkt = bytearray()
                     continue
 
@@ -152,8 +152,8 @@ class XGMII(Monitor):
 
                 if crc32 != expected_crc:
                     self.log.error("Incorrect CRC on received packet")
-                    self.log.info("Expected: %s" % (hexdump(expected_crc)))
-                    self.log.info("Received: %s" % (hexdump(crc32)))
+                    self.log.info("Expected: %s" % (hexdump(expected_crc, dump=True)))
+                    self.log.info("Received: %s" % (hexdump(crc32, dump=True)))
 
                 # Use scapy to decode the packet
                 if _have_scapy:
