@@ -138,7 +138,7 @@ async def run_test(dut):
 
     cocotb.start_soon(Clock(dut.c, 10, 'us').start(start_high=False))
 
-    tb = DFF_TB(dut, init_val=BinaryValue(0))
+    tb = DFF_TB(dut, init_val=BinaryValue("0"))
 
     clkedge = RisingEdge(dut.c)
 
