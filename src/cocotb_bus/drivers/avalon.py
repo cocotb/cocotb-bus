@@ -14,10 +14,11 @@ NB Currently we only support a very small subset of functionality
 import random
 from typing import Iterable, Union, Optional
 
+from scapy.utils import hexdump
+
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep
-from cocotb.utils import hexdump
 from cocotb.binary import BinaryValue
 from cocotb.result import TestError
 
@@ -259,7 +260,7 @@ class AvalonMemory(BusDriver):
         self._readlatency_min = readlatency_min
         self._readlatency_max = readlatency_max
         self._responses = []
-        self._coro = cocotb.fork(self._respond())
+        self._coro = cocotb.start_soon(self._respond())
 
         if hasattr(self.bus, "readdatavalid"):
             self.bus.readdatavalid.setimmediatevalue(0)
@@ -790,7 +791,7 @@ class AvalonSTPkts(ValidatedBusDriver):
         # Avoid spurious object creation by recycling
         if isinstance(pkt, bytes):
             self.log.debug("Sending packet of length %d bytes", len(pkt))
-            self.log.debug(hexdump(pkt))
+            self.log.debug(f"Sending Packet:\n{hexdump(pkt, dump=True)}")
             await self._send_string(pkt, sync=sync, channel=channel)
             self.log.debug("Successfully sent packet of length %d bytes", len(pkt))
         elif isinstance(pkt, str):

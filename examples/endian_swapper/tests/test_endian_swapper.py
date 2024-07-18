@@ -158,7 +158,7 @@ class EndianSwapperTB(object):
 
         self.csr = AvalonMaster(dut, "csr", dut.clk)
 
-        cocotb.fork(stream_out_config_setter(dut, self.stream_out,
+        cocotb.start_soon(stream_out_config_setter(dut, self.stream_out,
                                              self.stream_in))
 
         # Create a scoreboard on the stream_out bus
@@ -186,26 +186,26 @@ class EndianSwapperTB(object):
 
     async def reset(self, duration=20):
         self.dut._log.debug("Resetting DUT")
-        self.dut.reset_n <= 0
-        self.stream_in.bus.valid <= 0
+        self.dut.reset_n.value = 0
+        self.stream_in.bus.valid.value = 0
         await Timer(duration, units='ns')
         await RisingEdge(self.dut.clk)
-        self.dut.reset_n <= 1
+        self.dut.reset_n.value = 1
         self.dut._log.debug("Out of reset")
 
 
 async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
                    backpressure_inserter=None):
 
-    cocotb.fork(Clock(dut.clk, 10, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, 10, units='ns').start())
     tb = EndianSwapperTB(dut)
 
     await tb.reset()
-    dut.stream_out_ready <= 1
+    dut.stream_out_ready.value = 1
 
     # Start off any optional coroutines
     if config_coroutine is not None:
-        cocotb.fork(config_coroutine(tb.csr))
+        cocotb.start_soon(config_coroutine(tb.csr))
     if idle_inserter is not None:
         tb.stream_in.set_valid_generator(idle_inserter())
     if backpressure_inserter is not None:
@@ -260,7 +260,7 @@ async def wavedrom_test(dut):
     """
     Generate a JSON wavedrom diagram of a trace and save it to wavedrom.json
     """
-    cocotb.fork(Clock(dut.clk, 10, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, 10, units='ns').start())
     await RisingEdge(dut.clk)
     tb = EndianSwapperTB(dut)
     await tb.reset()

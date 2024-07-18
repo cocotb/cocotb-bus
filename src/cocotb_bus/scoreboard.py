@@ -64,7 +64,7 @@ class Scoreboard:
                                  (len(expected_output), str(monitor)))
                 for index, transaction in enumerate(expected_output):
                     self.log.info("Expecting %d:\n%s" %
-                                  (index, hexdump(str(transaction))))
+                                  (index, hexdump(str(transaction), dump=True)))
                     if index > 5:
                         self.log.info("... and %d more to come" %
                                       (len(expected_output) - index - 1))
@@ -118,7 +118,7 @@ class Scoreboard:
 
             log.error("Received transaction differed from expected output")
             if not strict_type:
-                log.info("Expected:\n" + hexdump(strexp))
+                log.info("Expected:\n" + hexdump(strexp, dump=True))
             else:
                 log.info("Expected:\n" + repr(exp))
             if not isinstance(exp, str):
@@ -128,7 +128,7 @@ class Scoreboard:
                 except Exception:
                     pass
             if not strict_type:
-                log.info("Received:\n" + hexdump(strgot))
+                log.info("Received:\n" + hexdump(strgot, dump=True))
             else:
                 log.info("Received:\n" + repr(got))
             if not isinstance(got, str):
@@ -137,7 +137,9 @@ class Scoreboard:
                         log.info(str(word))
                 except Exception:
                     pass
-            log.warning("Difference:\n%s" % hexdiff(strexp, strgot))
+            log.warning("Difference:")
+            # NOTE: scapy.utils.hexdiff doesn't return a string but prints!
+            hexdiff(strexp, strgot)
             if self._imm:
                 assert False, (
                     "Received transaction differed from expected "
@@ -220,7 +222,7 @@ class Scoreboard:
                 self.errors += 1
                 log.error("Received a transaction but wasn't expecting "
                           "anything")
-                log.info("Got: %s" % (hexdump(str(transaction))))
+                log.info("Got: %s" % (hexdump(str(transaction), dump=True)))
                 if self._imm:
                     assert False, (
                         "Received a transaction but wasn't "

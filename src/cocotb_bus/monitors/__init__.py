@@ -64,7 +64,7 @@ class Monitor:
             self.add_callback(callback)
 
         # Create an independent coroutine which can receive stuff
-        self._thread = cocotb.scheduler.add(self._monitor_recv())
+        self._thread = cocotb.start_soon(self._monitor_recv())
 
     def kill(self):
         """Kill the monitor coroutine."""

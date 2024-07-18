@@ -45,7 +45,7 @@ class BitDriver:
 
                     bit_driver.start((1, i % 5) for i in itertools.count())
         """
-        self._cr = cocotb.fork(self._cr_twiddler(generator=generator))
+        self._cr = cocotb.start_soon(self._cr_twiddler(generator=generator))
 
     def stop(self):
         """Stop generating data."""
@@ -89,7 +89,7 @@ class Driver:
             self.log = SimLog("cocotb.driver.%s" % (type(self).__qualname__))
 
         # Create an independent coroutine which can send stuff
-        self._thread = cocotb.scheduler.add(self._send_thread())
+        self._thread = cocotb.start_soon(self._send_thread())
 
     async def _acquire_lock(self):
         if self.busy:

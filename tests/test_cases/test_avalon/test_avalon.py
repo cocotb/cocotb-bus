@@ -45,7 +45,7 @@ class BurstAvlReadTest(object):
         self.dut = dut
         # Launch clock
         dut.reset.value = 1
-        clk_gen = cocotb.fork(Clock(dut.clk, 10).start())
+        clk_gen = cocotb.start_soon(Clock(dut.clk, 10).start())
 
         # Bytes aligned memory
         self.memdict = {value: value for value in range(0x1000)}
