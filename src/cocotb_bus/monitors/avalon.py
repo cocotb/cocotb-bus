@@ -13,8 +13,9 @@ NB Currently we only support a very small subset of functionality.
 
 import warnings
 
+from cocotb import start_soon
 from cocotb.utils import hexdump
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.monitors import BusMonitor
@@ -122,6 +123,11 @@ class AvalonSTPkts(BusMonitor):
                 raise AttributeError("%s has maxChannel=%d, but can only support a maximum channel of "
                                      "(2**channel_width)-1=%d, channel_width=%d" %
                                      (self.name, self.config['maxChannel'], maxChannel, len(self.bus.channel)))
+        self._ready_cycle = False
+
+    async def _ready_state(self, value):
+        await ClockCycles(self.clock, self.config["readyLatency"] - 1)
+        self._ready_cycle = value
 
     async def _monitor_recv(self):
         """Watch the pins and reconstruct transactions."""
@@ -133,18 +139,36 @@ class AvalonSTPkts(BusMonitor):
         invalid_cyclecount = 0
         channel = None
 
+
         def valid():
-            if hasattr(self.bus, 'ready'):
+            if hasattr(self.bus, 'ready') and self.config["readyLatency"] == 0:
                 return self.bus.valid.value and self.bus.ready.value
             return self.bus.valid.value
 
+        def ready():
+            if hasattr(self.bus, 'ready'):
+                return self.bus.ready.value.binstr == '1'
+            else:
+                return 1
+
+        ready_n1 = '0'
+        self._ready_cycle = False
         while True:
             await clkedge
 
             if self.in_reset:
                 continue
 
+            if ready() != ready_n1 and self.config["readyLatency"] > 0:
+                start_soon(self._ready_state(ready()))
+
             if valid():
+                 # When readyLatency > 0 we have to verify that this it not a non ready cycle.
+                if self.config["readyLatency"] > 0 and not self._ready_cycle:
+                    raise AvalonProtocolError(
+                        "Valid asserted during a not ready cycle %s" %
+                        str(self.bus.valid))
+
                 invalid_cyclecount = 0
 
                 if self.bus.startofpacket.value:
