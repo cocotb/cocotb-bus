@@ -30,7 +30,7 @@ import warnings
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import ReadOnly, RisingEdge
 from cocotb.binary import BinaryValue
 from cocotb.regression import TestFactory
 
@@ -149,6 +149,8 @@ async def run_test(dut):
 
     # Stop generation of input data. One more clock cycle is needed to capture
     # the resulting output of the DUT.
+
+    await ReadOnly()
     tb.stop()
     await clkedge
 
