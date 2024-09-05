@@ -7,6 +7,8 @@
 
 from random import randint, randrange, getrandbits
 
+from packaging.version import parse as parse_version
+
 import cocotb
 from cocotb.clock import Clock
 from cocotb.regression import TestFactory
@@ -424,9 +426,16 @@ async def test_simultaneous(dut, sync, num=5):
                      for address, value in zip(dummy_addrs, write_values)]
 
     read_values = []
-    for reader in readers:
-        read_values.append((await Join(reader))[0])
-    await Combine(*[Join(writer) for writer in dummy_writers])
+
+    if parse_version(cocotb.__version__) < parse_version("1.9.0"):
+        for reader in readers:
+            read_values.append((await Join(reader))[0])
+        await Combine(*[Join(writer) for writer in dummy_writers])
+    else:
+        for reader in readers:
+            await reader
+            read_values.append(reader.result()[0])
+        await Combine(*[cocotb.create_task(writer) for writer in dummy_writers])
 
     for i, (written, read) in enumerate(zip(write_values, read_values)):
         if written != read:
