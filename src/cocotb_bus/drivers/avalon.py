@@ -20,7 +20,6 @@ import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep
 from cocotb.binary import BinaryValue
-from cocotb.result import TestError
 
 from cocotb_bus.drivers import BusDriver, ValidatedBusDriver
 
@@ -100,11 +99,11 @@ class AvalonMaster(AvalonMM):
             The read data value.
 
         Raises:
-            :any:`TestError`: If master is write-only.
+            :any:`AssertionError`: If master is write-only.
         """
         if not self._can_read:
             self.log.error("Cannot read - have no read signal")
-            raise TestError("Attempt to read on a write-only AvalonMaster")
+            raise AssertionError("Attempt to read on a write-only AvalonMaster")
 
         await self._acquire_lock()
 
@@ -161,11 +160,11 @@ class AvalonMaster(AvalonMM):
             value: The data value to write.
 
         Raises:
-            :any:`TestError`: If master is read-only.
+            :any:`AssertionError`: If master is read-only.
         """
         if not self._can_write:
             self.log.error("Cannot write - have no write signal")
-            raise TestError("Attempt to write on a read-only AvalonMaster")
+            raise AssertionError("Attempt to write on a read-only AvalonMaster")
 
         await self._acquire_lock()
 
@@ -248,7 +247,7 @@ class AvalonMemory(BusDriver):
             self._writeable = True
 
         if not self._readable and not self._writeable:
-            raise TestError("Attempt to instantiate useless memory")
+            raise AssertionError("Attempt to instantiate useless memory")
 
         # Allow dual port RAMs by referencing the same dictionary
         if memory is None:
@@ -664,7 +663,7 @@ class AvalonSTPkts(ValidatedBusDriver):
         if hasattr(self.bus, 'channel'):
             self.bus.channel.value = 0
         elif channel is not None:
-            raise TestError("%s does not have a channel signal" % self.name)
+            raise AssertionError("%s does not have a channel signal" % self.name)
 
         while string:
             if not firstword or (firstword and sync):
@@ -688,7 +687,7 @@ class AvalonSTPkts(ValidatedBusDriver):
                 if channel is None:
                     self.bus.channel.value = 0
                 elif channel > self.config['maxChannel'] or channel < 0:
-                    raise TestError("%s: Channel value %d is outside range 0-%d" %
+                    raise AssertionError("%s: Channel value %d is outside range 0-%d" %
                                     (self.name, channel, self.config['maxChannel']))
                 else:
                     self.bus.channel.value = channel
