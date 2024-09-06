@@ -72,7 +72,7 @@ class TestMonitor(BusMonitor):
             if not self.bus.valid.value:
                 continue
             # Receive transaction and provide to _recv method
-            tr = TestTransaction(int(self.bus.data), int(self.bus.tmp))
+            tr = TestTransaction(int(self.bus.data.value), int(self.bus.tmp.value))
             self._recv(tr)
 
     def _get_result(self, transaction):
