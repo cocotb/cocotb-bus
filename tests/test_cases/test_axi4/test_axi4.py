@@ -8,11 +8,12 @@
 from random import randint, randrange, getrandbits
 
 from packaging.version import parse as parse_version
+import warnings
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.regression import TestFactory
 from cocotb.triggers import ClockCycles, Combine, Join, RisingEdge
+from cocotb_bus.compat import TestFactory
 from cocotb_bus.drivers.amba import (
     AXIBurst, AXI4LiteMaster, AXI4Master, AXIProtocolError, AXIReadBurstLengthMismatch,
     AXIxRESP)
@@ -519,7 +520,9 @@ single_beat_with_latency = TestFactory(test_single_beat)
 single_beat_with_latency.add_option('driver', (AXI4Master,))
 single_beat_with_latency.add_option('address_latency', (0, 5))
 single_beat_with_latency.add_option('data_latency', (1, 10))
-single_beat_with_latency.generate_tests(postfix="_latency")
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    single_beat_with_latency.generate_tests(postfix="_latency")
 
 incr_burst = TestFactory(test_incr_burst)
 incr_burst.add_option('return_rresp', (True, False))
@@ -529,7 +532,9 @@ incr_burst.generate_tests()
 incr_burst_size = TestFactory(test_incr_burst)
 incr_burst_size.add_option('return_rresp', (False,))
 incr_burst_size.add_option('size', (1, 2))
-incr_burst_size.generate_tests(postfix="_size")
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    incr_burst_size.generate_tests(postfix="_size")
 
 fixed_wrap_burst = TestFactory(test_fixed_wrap_burst)
 fixed_wrap_burst.add_option('size', (None, 1, 2))
