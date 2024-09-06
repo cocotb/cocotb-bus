@@ -40,7 +40,7 @@ class TestMonitor(BusMonitor):
         while True:
             await clkedge
             if self.bus.valid.value:
-                self._recv(int(self.bus.data))
+                self._recv(int(self.bus.data.value))
 
     def _get_result(self, transaction):
         self.log.info("Received {} on bank {}".format(transaction, self.bank))
