@@ -11,12 +11,12 @@ import logging
 from typing import Iterable, Tuple, Any, Optional, Callable
 
 import cocotb
-from cocotb.decorators import coroutine
 from cocotb.triggers import (Event, RisingEdge, ReadOnly, NextTimeStep,
                              Edge)
 from cocotb.handle import SimHandleBase
 
 from cocotb_bus.bus import Bus
+from cocotb_bus.compat import coroutine
 
 
 class BitDriver:

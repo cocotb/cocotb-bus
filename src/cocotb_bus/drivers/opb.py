@@ -9,11 +9,11 @@ Drivers for On-chip Peripheral Bus.
 NOTE: Currently we only support a very small subset of functionality.
 """
 
-import cocotb
 from cocotb.triggers import RisingEdge, ReadOnly
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.drivers import BusDriver
+from cocotb_bus.compat import coroutine
 
 
 class OPBException(Exception):
@@ -32,7 +32,7 @@ class OPBMaster(BusDriver):
         self.bus.select.setimmediatevalue(0)
         self.log.debug("OPBMaster created")
 
-    @cocotb.coroutine
+    @coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryValue:
         """Issue a request to the bus and block until this comes back.
 
@@ -77,7 +77,7 @@ class OPBMaster(BusDriver):
         self.log.info("Read of address 0x%x returned 0x%08x" % (address, data))
         return data
 
-    @cocotb.coroutine
+    @coroutine
     async def write(self, address: int, value: int, sync: bool = True) -> None:
         """Issue a write to the given address with the specified value.
 

@@ -17,6 +17,7 @@ from cocotb.handle import SimHandleBase
 from cocotb.triggers import ClockCycles, Combine, Lock, ReadOnly, RisingEdge
 
 from cocotb_bus.drivers import BusDriver
+from cocotb_bus.compat import coroutine
 
 
 class AXIBurst(enum.IntEnum):
@@ -244,7 +245,7 @@ class AXI4Master(BusDriver):
                 if beat_num == len(data) - 1:
                     self.bus.WVALID.value = 0
 
-    @cocotb.coroutine
+    @coroutine
     async def write(
         self, address: int, value: Union[int, Sequence[int]], *,
         size: Optional[int] = None, burst: AXIBurst = AXIBurst.INCR,
@@ -324,7 +325,7 @@ class AXI4Master(BusDriver):
                     err_msg.format(address, len(value), burst.name,
                                    result.value, result.name), result)
 
-    @cocotb.coroutine
+    @coroutine
     async def read(
         self, address: int, length: int = 1, *,
         size: Optional[int] = None, burst: AXIBurst = AXIBurst.INCR,
@@ -492,7 +493,7 @@ class AXI4LiteMaster(AXI4Master):
 
     _optional_signals = []
 
-    @cocotb.coroutine
+    @coroutine
     async def write(
         self, address: int, value: int, byte_enable: Optional[int] = None,
         address_latency: int = 0, data_latency: int = 0, sync: bool = True
@@ -529,7 +530,7 @@ class AXI4LiteMaster(AXI4Master):
         # Needed for backwards compatibility
         return BinaryValue(value=AXIxRESP.OKAY.value, n_bits=2)
 
-    @cocotb.coroutine
+    @coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryValue:
         """Read from an address.
 
