@@ -17,7 +17,7 @@ import cocotb
 from cocotb.triggers import Event, Timer, First
 
 from cocotb_bus.bus import Bus
-from cocotb_bus.compat import coroutine
+from cocotb_bus.compat import coroutine, set_event
 
 
 class MonitorStatistics:
@@ -51,7 +51,10 @@ class Monitor:
 
     def __init__(self, callback=None, event=None):
         self._event = event
+        if self._event is not None:
+            self._event.data = None  # FIXME: This attribute should be removed on next API break
         self._wait_event = Event()
+        self._wait_event.data = None
         self._recvQ = deque()
         self._callbacks = []
         self.stats = MonitorStatistics()
@@ -134,11 +137,11 @@ class Monitor:
             self._recvQ.append(transaction)
 
         if self._event is not None:
-            self._event.set(data=transaction)
+            set_event(self._event, transaction)
 
         # If anyone was waiting then let them know
         if self._wait_event is not None:
-            self._wait_event.set(data=transaction)
+            set_event(self._wait_event, transaction)
             self._wait_event.clear()
 
 
