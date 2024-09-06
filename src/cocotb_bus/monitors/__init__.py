@@ -11,10 +11,10 @@ the transactions.
 """
 
 from collections import deque
+import logging
 
 import cocotb
 from cocotb.decorators import coroutine
-from cocotb.log import SimLog
 from cocotb.triggers import Event, Timer, First
 
 from cocotb_bus.bus import Bus
@@ -58,7 +58,7 @@ class Monitor:
 
         # Sub-classes may already set up logging
         if not hasattr(self, "log"):
-            self.log = SimLog("cocotb.monitor.%s" % (type(self).__qualname__))
+            self.log = logging.getLogger("cocotb.monitor.%s" % (type(self).__qualname__))
 
         if callback is not None:
             self.add_callback(callback)
@@ -149,7 +149,7 @@ class BusMonitor(Monitor):
 
     def __init__(self, entity, name, clock, reset=None, reset_n=None,
                  callback=None, event=None, **kwargs):
-        self.log = SimLog("cocotb.%s.%s" % (entity._name, name))
+        self.log = logging.getLogger("cocotb.%s.%s" % (entity._name, name))
         self.entity = entity
         self.name = name
         self.clock = clock
