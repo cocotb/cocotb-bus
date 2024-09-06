@@ -14,10 +14,10 @@ from collections import deque
 import logging
 
 import cocotb
-from cocotb.decorators import coroutine
 from cocotb.triggers import Event, Timer, First
 
 from cocotb_bus.bus import Bus
+from cocotb_bus.compat import coroutine
 
 
 class MonitorStatistics:

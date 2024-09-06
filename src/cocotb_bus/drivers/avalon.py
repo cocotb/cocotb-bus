@@ -17,11 +17,11 @@ from typing import Iterable, Union, Optional
 from scapy.utils import hexdump
 
 import cocotb
-from cocotb.decorators import coroutine
 from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.drivers import BusDriver, ValidatedBusDriver
+from cocotb_bus.compat import coroutine
 
 
 class AvalonMM(BusDriver):
