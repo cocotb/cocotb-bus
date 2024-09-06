@@ -25,7 +25,7 @@ class StreamBusMonitor(BusMonitor):
         while True:
             await RisingEdge(self.clock)
             await ReadOnly()
-            if self.bus.valid.value:
+            if str(self.bus.valid.value) == '1':
                 self._recv(int(self.bus.data.value))
 
 

@@ -53,8 +53,8 @@ class AvalonST(BusMonitor):
 
         def valid():
             if hasattr(self.bus, "ready"):
-                return self.bus.valid.value and self.bus.ready.value
-            return self.bus.valid.value
+                return str(self.bus.valid.value) == '1' and str(self.bus.ready.value) == '1'
+            return str(self.bus.valid.value) == '1'
 
         # NB could await on valid here more efficiently?
         while True:
@@ -136,8 +136,8 @@ class AvalonSTPkts(BusMonitor):
 
         def valid():
             if hasattr(self.bus, 'ready'):
-                return self.bus.valid.value and self.bus.ready.value
-            return self.bus.valid.value
+                return str(self.bus.valid.value) == '1' and str(self.bus.ready.value) == '1'
+            return str(self.bus.valid.value) == '1'
 
         while True:
             await clkedge
@@ -148,7 +148,7 @@ class AvalonSTPkts(BusMonitor):
             if valid():
                 invalid_cyclecount = 0
 
-                if self.bus.startofpacket.value:
+                if str(self.bus.startofpacket.value) == '1':
                     if pkt:
                         raise AvalonProtocolError("Duplicate start-of-packet received on %s" %
                                                   str(self.bus.startofpacket))
@@ -161,7 +161,7 @@ class AvalonSTPkts(BusMonitor):
 
                 # Handle empty and X's in empty / data
                 vec = BinaryValue()
-                if not self.bus.endofpacket.value:
+                if str(self.bus.endofpacket.value) != '1':
                     vec = self.bus.data.value
                 else:
                     value = self.bus.data.value.get_binstr()
@@ -189,7 +189,7 @@ class AvalonSTPkts(BusMonitor):
                     elif self.bus.channel.value.integer != channel:
                         raise AvalonProtocolError("Channel value changed during packet")
 
-                if self.bus.endofpacket.value:
+                if str(self.bus.endofpacket.value) == '1':
                     self.log.info("Received a packet of %d bytes", len(pkt))
                     self.log.debug(f"Received Packet:\n{hexdump(pkt, dump=True)}")
                     self.channel = channel
