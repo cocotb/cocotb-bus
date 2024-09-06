@@ -15,8 +15,17 @@ def TestFactory(*args, **kwargs):
         return cocotb.regression.TestFactory(*args, **kwargs)
 
 
-def coroutine(f):
-    if parse_version(cocotb.__version__) > parse_version("2.dev0"):
+if parse_version(cocotb.__version__) > parse_version("2.dev0"):
+    def set_event(event, data):
+        event.data = data
+        event.set()
+
+    def coroutine(f):
         return f
 
-    return cocotb.coroutine(f)
+else:
+    def set_event(event, data):
+        event.set(data)
+
+    def coroutine(f):
+        return cocotb.coroutine(f)
