@@ -8,7 +8,6 @@
 
 import logging
 
-from cocotb.log import SimLog
 from cocotb.result import TestSuccess
 
 from cocotb_bus.monitors import Monitor
@@ -39,7 +38,7 @@ class Scoreboard:
 
     def __init__(self, dut, reorder_depth=0, fail_immediately=True):  # FIXME: reorder_depth needed here?
         self.dut = dut
-        self.log = SimLog("cocotb.scoreboard.%s" % self.dut._name)
+        self.log = logging.getLogger("cocotb.scoreboard.%s" % self.dut._name)
         self.errors = 0
         self.expected = {}
         self._imm = fail_immediately

@@ -7,13 +7,13 @@
 """Set of common driver base classes."""
 
 from collections import deque
+import logging
 from typing import Iterable, Tuple, Any, Optional, Callable
 
 import cocotb
 from cocotb.decorators import coroutine
 from cocotb.triggers import (Event, RisingEdge, ReadOnly, NextTimeStep,
                              Edge)
-from cocotb.log import SimLog
 from cocotb.handle import SimHandleBase
 
 from cocotb_bus.bus import Bus
@@ -86,7 +86,7 @@ class Driver:
 
         # Sub-classes may already set up logging
         if not hasattr(self, "log"):
-            self.log = SimLog("cocotb.driver.%s" % (type(self).__qualname__))
+            self.log = logging.getLogger("cocotb.driver.%s" % (type(self).__qualname__))
 
         # Create an independent coroutine which can send stuff
         self._thread = cocotb.start_soon(self._send_thread())
@@ -228,7 +228,7 @@ class BusDriver(Driver):
     def __init__(self, entity: SimHandleBase, name: Optional[str], clock: SimHandleBase, **kwargs: Any):
         index = kwargs.get("array_idx", None)
 
-        self.log = SimLog("cocotb.%s.%s" % (entity._name, name))
+        self.log = logging.getLogger("cocotb.%s.%s" % (entity._name, name))
         Driver.__init__(self)
         self.entity = entity
         self.clock = clock
