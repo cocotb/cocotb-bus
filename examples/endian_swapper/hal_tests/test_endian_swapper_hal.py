@@ -29,7 +29,6 @@ import logging
 import cocotb
 from cocotb.triggers import RisingEdge, Timer, ReadOnly
 from cocotb.clock import Clock
-from cocotb.result import TestFailure
 from cocotb_bus.drivers.avalon import AvalonMaster
 
 import hal
@@ -79,15 +78,16 @@ async def initial_hal_test(dut, debug=True):
     state = hal.endian_swapper_init(0)
 
     # Check the actual value
-    if dut.byteswapping.value:
-        raise TestFailure("Byteswapping is enabled but haven't configured DUT")
+    assert not dut.byteswapping.value, (
+        "Byteswapping is enabled but haven't configured DUT"
+    )
 
     await cocotb.external(hal.endian_swapper_enable)(state)
 
     await ReadOnly()
 
-    if not dut.byteswapping.value:
-        raise TestFailure("Byteswapping wasn't enabled after calling "
-                          "endian_swapper_enable")
+    assert dut.byteswapping.value, (
+        "Byteswapping wasn't enabled after calling endian_swapper_enable"
+    )
 
     dut._log.info("HAL call endian_swapper_enable successfully enabled the DUT")
