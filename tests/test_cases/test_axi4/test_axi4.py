@@ -12,7 +12,6 @@ from packaging.version import parse as parse_version
 import cocotb
 from cocotb.clock import Clock
 from cocotb.regression import TestFactory
-from cocotb.result import TestFailure
 from cocotb.triggers import ClockCycles, Combine, Join, RisingEdge
 from cocotb_bus.drivers.amba import (
     AXIBurst, AXI4LiteMaster, AXI4Master, AXIProtocolError, AXIReadBurstLengthMismatch,
@@ -43,12 +42,11 @@ def add_wstrb_mask(data_width, previous_value, write_value, wstrb):
 def compare_read_values(expected_values, read_values, burst, burst_length,
                         address):
     for i, (expected, read) in enumerate(zip(expected_values, read_values)):
-        if expected != read:
-            raise TestFailure(
-                "Read {:#x} at beat {}/{} of {} burst with starting address "
-                "{:#x}, but was expecting {:#x})"
-                .format(read.integer, i + 1, burst_length, burst.name, address,
-                        expected))
+        assert expected == read, (
+            "Read {:#x} at beat {}/{} of {} burst with starting address "
+            "{:#x}, but was expecting {:#x})"
+            .format(read.integer, i + 1, burst_length, burst.name, address, expected)
+        )
 
 
 async def setup_dut(dut):
@@ -84,12 +82,13 @@ async def test_single_beat(dut, driver, address_latency, data_latency):
     expected_value = add_wstrb_mask(data_width, previous_value.integer,
                                     write_value, strobe)
 
-    if read_value != expected_value:
-        raise TestFailure("Read {:#x} from {:#x} but was expecting {:#x} "
-                          "({:#x} with {:#x} as strobe and {:#x} as previous "
-                          "value)"
-                          .format(read_value.integer, address, expected_value,
-                                  write_value, strobe, previous_value))
+    assert read_value == expected_value, (
+        "Read {:#x} from {:#x} but was expecting {:#x} "
+        "({:#x} with {:#x} as strobe and {:#x} as previous "
+        "value)"
+        .format(read_value.integer, address, expected_value,
+                write_value, strobe, previous_value)
+    )
 
 
 async def test_incr_burst(dut, size, return_rresp):
@@ -118,12 +117,12 @@ async def test_incr_burst(dut, size, return_rresp):
     if return_rresp:
         read_values, rresp_list = zip(*read_values)
         for i, rresp in enumerate(rresp_list):
-            if rresp is not AXIxRESP.OKAY:
-                raise TestFailure(
-                    "Read at beat {}/{} with starting address {:#x} failed "
-                    "with RRESP {} ({})"
-                    .format(i + 1, len(rresp_list), address, rresp.value,
-                            rresp.name))
+            assert rresp is AXIxRESP.OKAY, (
+                "Read at beat {}/{} with starting address {:#x} failed "
+                "with RRESP {} ({})"
+                .format(i + 1, len(rresp_list), address, rresp.value,
+                        rresp.name)
+            )
 
     strobes += [strobes[-1]]
     expected_values = \
@@ -132,14 +131,14 @@ async def test_incr_burst(dut, size, return_rresp):
          in zip(previous_values, write_values, strobes)]
 
     for i in range(len(read_values)):
-        if expected_values[i] != read_values[i]:
-            raise TestFailure(
-                "Read {:#x} at beat {}/{} with starting address {:#x}, but "
-                "was expecting {:#x} ({:#x} with {:#x} as strobe and {:#x} as "
-                "previous value)"
-                .format(read_values[i].integer, i + 1, burst_length, address,
-                        expected_values[i], write_values[i], strobes[i],
-                        previous_values[i].integer))
+        assert expected_values[i] == read_values[i], (
+            "Read {:#x} at beat {}/{} with starting address {:#x}, but "
+            "was expecting {:#x} ({:#x} with {:#x} as strobe and {:#x} as "
+            "previous value)"
+            .format(read_values[i].integer, i + 1, burst_length, address,
+                    expected_values[i], write_values[i], strobes[i],
+                    previous_values[i].integer)
+        )
 
 
 async def test_fixed_wrap_burst(dut, size, burst_length=16):
@@ -312,13 +311,15 @@ async def test_unmapped(dut, driver):
                 except ValueError:
                     await axim.write(address, write_data[0])
 
-            raise TestFailure("{} at {:#x} should have failed, but did not"
-                              .format(rw, address))
+            assert False, (
+                "{} at {:#x} should have failed, but did not"
+                .format(rw, address)
+            )
 
         except AXIProtocolError as e:
-            if e.xresp is not AXIxRESP.DECERR:
-                raise TestFailure("Was expecting DECERR, but received {}"
-                                  .format(e.xresp.name))
+            assert e.xresp is AXIxRESP.DECERR, (
+                "Was expecting DECERR, but received {}".format(e.xresp.name)
+            )
 
 
 @cocotb.test()
@@ -351,10 +352,11 @@ async def test_illegal_operations(dut):
                               for i in range(length)]
                     await axim.write(ram_start, values, size=size, burst=burst)
 
-                raise TestFailure(
+                assert False, (
                     "{} with length={}, size={} and burst={} has been "
                     "performed by the driver, but it is an illegal "
-                    "operation".format(rw, length, size, burst.name))
+                    "operation".format(rw, length, size, burst.name)
+                )
 
             except ValueError:
                 pass
@@ -385,11 +387,13 @@ async def test_4kB_boundary(dut):
             else:
                 await axim.write(address, write_values)
 
-            raise TestFailure(
+            assert False, (
                 "{} from {:#x} to {:#x} crosses a 4kB boundary, but the "
                 "driver allowed it"
                 .format(rw, address,
-                        address + (burst_length - 1) * data_width))
+                        address + (burst_length - 1) * data_width)
+            )
+
         except ValueError:
             pass
 
@@ -438,9 +442,10 @@ async def test_simultaneous(dut, sync, num=5):
         await Combine(*[cocotb.create_task(writer) for writer in dummy_writers])
 
     for i, (written, read) in enumerate(zip(write_values, read_values)):
-        if written != read:
-            raise TestFailure("#{}: wrote {:#x} but read back {:#x}"
-                              .format(i, written, read.integer))
+        assert written == read, (
+            "#{}: wrote {:#x} but read back {:#x}"
+            .format(i, written, read.integer)
+        )
 
 
 @cocotb.test()
@@ -457,9 +462,10 @@ async def test_axi4lite_write_burst(dut):
         await axim.write(ram_start, [randrange(0, 2**(data_width * 8))
                                      for i in range(length)])
 
-        raise TestFailure(
+        assert False, (
             "Write with length={} has been performed by the driver, but "
-            "burst operations are not allowed on AXI4-Lite".format(length))
+            "burst operations are not allowed on AXI4-Lite".format(length)
+        )
 
     except ValueError:
         pass
@@ -492,10 +498,12 @@ async def test_read_length_mismatch(dut):
             getattr(dut, AXI_PREFIX + '_ARLEN').value = arlen
             await axim.read(address, burst_length)
 
-            raise TestFailure("Mismatch between ARLEN value ({}) and number "
-                              "of read words ({}), but the driver did not "
-                              "raise an exception"
-                              .format(arlen, burst_length))
+            assert False, (
+                "Mismatch between ARLEN value ({}) and number "
+                "of read words ({}), but the driver did not "
+                "raise an exception"
+                .format(arlen, burst_length)
+            )
 
         except AXIReadBurstLengthMismatch:
             pass

@@ -34,7 +34,6 @@ Also used as regression test of cocotb capabilities
 import cocotb
 from cocotb.triggers import Timer, RisingEdge
 from cocotb.clock import Clock
-from cocotb.result import TestFailure
 from cocotb_bus.drivers.avalon import AvalonMemory
 
 
@@ -110,10 +109,10 @@ async def test_burst_read(dut):
                 memdictvalue = "Error"
             else:
                 memdictvalue = hex(memdictvalue)
-            raise TestFailure("Wrong value read in memory :" +
-                              " read_mem[" + hex(key) + "] = " +
-                              hex(value) + " must be " +
-                              memdictvalue)
+            assert False, (
+                "Wrong value read in memory : read_mem[" + hex(key) + "] = " +
+                hex(value) + " must be " + memdictvalue
+            )
 
     await Timer(1, "ns")
     dut.user_read_buffer.value = 0
