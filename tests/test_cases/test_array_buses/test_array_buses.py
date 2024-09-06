@@ -39,7 +39,7 @@ class TestMonitor(BusMonitor):
         clkedge = RisingEdge(self.clock)
         while True:
             await clkedge
-            if self.bus.valid.value:
+            if str(self.bus.valid.value) == '1':
                 self._recv(int(self.bus.data.value))
 
     def _get_result(self, transaction):

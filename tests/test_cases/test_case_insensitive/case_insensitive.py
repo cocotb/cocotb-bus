@@ -69,7 +69,7 @@ class TestMonitor(BusMonitor):
         clkedge = RisingEdge(self.clock)
         while True:
             await clkedge
-            if not self.bus.valid.value:
+            if str(self.bus.valid.value) != '1':
                 continue
             # Receive transaction and provide to _recv method
             tr = TestTransaction(int(self.bus.data.value), int(self.bus.tmp.value))

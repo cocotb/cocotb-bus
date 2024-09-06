@@ -78,7 +78,7 @@ async def initial_hal_test(dut, debug=True):
     state = hal.endian_swapper_init(0)
 
     # Check the actual value
-    assert not dut.byteswapping.value, (
+    assert str(dut.byteswapping.value) != '1', (
         "Byteswapping is enabled but haven't configured DUT"
     )
 
@@ -86,7 +86,7 @@ async def initial_hal_test(dut, debug=True):
 
     await ReadOnly()
 
-    assert dut.byteswapping.value, (
+    assert str(dut.byteswapping.value) == '1', (
         "Byteswapping wasn't enabled after calling endian_swapper_enable"
     )
 

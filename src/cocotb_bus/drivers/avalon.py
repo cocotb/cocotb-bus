@@ -357,7 +357,7 @@ class AvalonMemory(BusDriver):
 
             await ReadOnly()
 
-            if self._readable and self.bus.read.value:
+            if self._readable and str(self.bus.read.value) == '1':
                 if not self._burstread:
                     self._pad()
                     addr = self.bus.address.value.integer
@@ -414,7 +414,7 @@ class AvalonMemory(BusDriver):
                         await edge
                         self._do_response()
 
-            if self._writeable and self.bus.write.value:
+            if self._writeable and str(self.bus.write.value) == '1':
                 if not self._burstwrite:
                     addr = self.bus.address.value.integer
                     data = self.bus.writedata.value.integer
@@ -498,7 +498,7 @@ class AvalonST(ValidatedBusDriver):
             FIXME assumes readyLatency of 0
         """
         await ReadOnly()
-        while not self.bus.ready.value:
+        while str(self.bus.ready.value) != '1':
             await RisingEdge(self.clock)
             await ReadOnly()
 
@@ -628,7 +628,7 @@ class AvalonSTPkts(ValidatedBusDriver):
             FIXME assumes readyLatency of 0
         """
         await ReadOnly()
-        while not self.bus.ready.value:
+        while str(self.bus.ready.value) != '1':
             await RisingEdge(self.clock)
             await ReadOnly()
 

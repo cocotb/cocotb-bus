@@ -138,7 +138,7 @@ async def stream_out_config_setter(dut, stream_out, stream_in):
     while True:
         await edge
         await ro
-        if dut.byteswapping.value:
+        if str(dut.byteswapping.value) == '1':
             stream_out.config['firstSymbolInHighOrderBits'] = \
                 not stream_in.config['firstSymbolInHighOrderBits']
         else:
@@ -218,7 +218,7 @@ async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
     # Wait at least 2 cycles where output ready is low before ending the test
     for i in range(2):
         await RisingEdge(dut.clk)
-        while not dut.stream_out_ready.value:
+        while str(dut.stream_out_ready.value) != '1':
             await RisingEdge(dut.clk)
 
     pkt_count = await tb.csr.read(1)

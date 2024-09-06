@@ -163,7 +163,7 @@ class AXI4Master(BusDriver):
             # Wait until acknowledged
             while True:
                 await ReadOnly()
-                if self.bus.AWREADY.value:
+                if str(self.bus.AWREADY.value) == '1':
                     break
                 await RisingEdge(self.clock)
             await RisingEdge(self.clock)
@@ -239,7 +239,7 @@ class AXI4Master(BusDriver):
 
                 while True:
                     await RisingEdge(self.clock)
-                    if self.bus.WREADY.value:
+                    if str(self.bus.WREADY.value) == '1':
                         break
 
                 if beat_num == len(data) - 1:
@@ -308,7 +308,7 @@ class AXI4Master(BusDriver):
             # Wait for the response
             while True:
                 await ReadOnly()
-                if self.bus.BVALID.value and self.bus.BREADY.value:
+                if str(self.bus.BVALID.value) == '1' and str(self.bus.BREADY.value) == '1':
                     result = AXIxRESP(self.bus.BRESP.value.integer)
                     break
                 await RisingEdge(self.clock)
@@ -410,7 +410,7 @@ class AXI4Master(BusDriver):
 
             while True:
                 await ReadOnly()
-                if self.bus.ARREADY.value:
+                if str(self.bus.ARREADY.value) == '1':
                     break
                 await RisingEdge(self.clock)
 
@@ -424,7 +424,7 @@ class AXI4Master(BusDriver):
             for beat_num in itertools.count():
                 while True:
                     await ReadOnly()
-                    if self.bus.RVALID.value and self.bus.RREADY.value:
+                    if str(self.bus.RVALID.value) == '1' and str(self.bus.RREADY.value) == '1':
                         # Shift and mask to correctly handle narrow bursts
                         beat_value = shift_and_mask(self.bus.RDATA.value,
                                                     size, byte_offset)
@@ -438,7 +438,7 @@ class AXI4Master(BusDriver):
                         break
                     await RisingEdge(self.clock)
 
-                if not hasattr(self.bus, "RLAST") or self.bus.RLAST.value:
+                if not hasattr(self.bus, "RLAST") or str(self.bus.RLAST.value) == '1':
                     break
 
                 await RisingEdge(self.clock)
@@ -613,7 +613,7 @@ class AXI4Slave(BusDriver):
             while True:
                 self.bus.WREADY.value = 0
                 await ReadOnly()
-                if self.bus.AWVALID.value:
+                if str(self.bus.AWVALID.value) == '1':
                     self.bus.WREADY.value = 1
                     break
                 await clock_re
@@ -643,7 +643,7 @@ class AXI4Slave(BusDriver):
             await clock_re
 
             while True:
-                if self.bus.WVALID.value:
+                if str(self.bus.WVALID.value) == '1':
                     word = self.bus.WDATA.value
                     word.big_endian = self.big_endian
                     _burst_diff = burst_length - burst_count
@@ -661,7 +661,7 @@ class AXI4Slave(BusDriver):
         while True:
             while True:
                 await ReadOnly()
-                if self.bus.ARVALID.value:
+                if str(self.bus.ARVALID.value) == '1':
                     break
                 await clock_re
 
@@ -694,7 +694,7 @@ class AXI4Slave(BusDriver):
             while True:
                 self.bus.RVALID.value = 1
                 await ReadOnly()
-                if self.bus.RREADY.value:
+                if str(self.bus.RREADY.value) == '1':
                     _burst_diff = burst_length - burst_count
                     _st = _araddr + (_burst_diff * bytes_in_beat)
                     _end = _araddr + ((_burst_diff + 1) * bytes_in_beat)
