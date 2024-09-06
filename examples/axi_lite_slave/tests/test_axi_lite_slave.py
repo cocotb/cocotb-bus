@@ -40,7 +40,8 @@ async def write_address_0(dut):
     await axim.write(ADDRESS, DATA)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
 
-    value = dut.dut.r_temp_0
+    value = dut.dut.r_temp_0.value
+
     assert value == DATA, ("Register at address 0x%08X should have been "
                            "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value)))
     dut._log.info("Write 0x%08X to address 0x%08X" % (int(value), ADDRESS))
@@ -110,7 +111,7 @@ async def write_and_read(dut):
     value = await axim.read(ADDRESS)
     await Timer(CLK_PERIOD_NS * 10, units='ns')
 
-    value = dut.dut.r_temp_0
+    value = dut.dut.r_temp_0.value
     assert value == DATA, ("Register at address 0x%08X should have been "
                            "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value)))
     dut._log.info("Write 0x%08X to address 0x%08X" % (int(value), ADDRESS))
