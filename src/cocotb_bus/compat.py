@@ -4,7 +4,15 @@
 
 
 from packaging.version import parse as parse_version
+import warnings
+
 import cocotb
+
+def TestFactory(*args, **kwargs):
+    with warnings.catch_warnings():
+        # TestFactory has been deprecated in v2.0 and there's no migration path in v1.x
+        warnings.simplefilter("ignore")
+        return cocotb.regression.TestFactory(*args, **kwargs)
 
 
 def coroutine(f):

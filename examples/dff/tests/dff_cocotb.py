@@ -32,8 +32,8 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ReadOnly, RisingEdge
 from cocotb.binary import BinaryValue
-from cocotb.regression import TestFactory
 
+from cocotb_bus.compat import TestFactory
 from cocotb_bus.monitors import Monitor
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.scoreboard import Scoreboard

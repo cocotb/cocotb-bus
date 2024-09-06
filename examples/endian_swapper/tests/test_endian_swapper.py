@@ -35,7 +35,7 @@ import cocotb
 
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge, ReadOnly
-from cocotb.regression import TestFactory
+from cocotb_bus.compat import TestFactory
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.drivers.avalon import AvalonSTPkts as AvalonSTDriver
 from cocotb_bus.drivers.avalon import AvalonMaster
