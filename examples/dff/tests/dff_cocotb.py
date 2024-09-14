@@ -31,9 +31,8 @@ import warnings
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ReadOnly, RisingEdge
-from cocotb.binary import BinaryValue
 
-from cocotb_bus.compat import TestFactory
+from cocotb_bus.compat import create_binary, TestFactory
 from cocotb_bus.monitors import Monitor
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.scoreboard import Scoreboard
@@ -138,7 +137,7 @@ async def run_test(dut):
 
     cocotb.start_soon(Clock(dut.c, 10, 'us').start(start_high=False))
 
-    tb = DFF_TB(dut, init_val=BinaryValue("0"))
+    tb = DFF_TB(dut, init_val=create_binary("0", 1, big_endian=True))
 
     clkedge = RisingEdge(dut.c)
 
@@ -159,5 +158,6 @@ async def run_test(dut):
 
 
 # Register the test.
+
 factory = TestFactory(run_test)
 factory.generate_tests()

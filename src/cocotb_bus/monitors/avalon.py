@@ -16,8 +16,13 @@ import warnings
 from scapy.utils import hexdump
 
 from cocotb.triggers import RisingEdge
-from cocotb.binary import BinaryValue
 
+from cocotb_bus.compat import (
+    binary_is_resolvable,
+    convert_binary_to_bytes,
+    convert_binary_to_unsigned,
+    create_binary,
+)
 from cocotb_bus.monitors import BusMonitor
 
 
@@ -60,9 +65,10 @@ class AvalonST(BusMonitor):
         while True:
             await clkedge
             if valid():
-                vec = self.bus.data.value
-                vec.big_endian = self.config["firstSymbolInHighOrderBits"]
-                self._recv(vec.buff)
+                self._recv(convert_binary_to_bytes(
+                    self.bus.data.value,
+                    big_endian=self.config["firstSymbolInHighOrderBits"]
+                ))
 
 
 class AvalonSTPkts(BusMonitor):
@@ -160,33 +166,45 @@ class AvalonSTPkts(BusMonitor):
                                               "packet")
 
                 # Handle empty and X's in empty / data
-                vec = BinaryValue()
                 if str(self.bus.endofpacket.value) != '1':
-                    vec = self.bus.data.value
+                    pkt += convert_binary_to_bytes(
+                        self.bus.data.value,
+                        big_endian=self.config['firstSymbolInHighOrderBits']
+                    )
                 else:
-                    value = self.bus.data.value.get_binstr()
-                    if self.config["useEmpty"] and self.bus.empty.value.integer:
-                        empty = self.bus.empty.value.integer * self.config["dataBitsPerSymbol"]
+                    value = str(self.bus.data.value)
+                    if self.config["useEmpty"] and \
+                            convert_binary_to_unsigned(self.bus.empty.value):
+                        empty = convert_binary_to_unsigned(self.bus.empty.value) \
+                            * self.config["dataBitsPerSymbol"]
                         if self.config["firstSymbolInHighOrderBits"]:
                             value = value[:-empty]
                         else:
                             value = value[empty:]
-                    vec.assign(value)
-                    if not vec.is_resolvable:
-                        raise AvalonProtocolError("After empty masking value is still bad?  "
-                                                  "Had empty {:d}, got value {:s}".format(empty,
-                                                                                          self.bus.data.value.get_binstr()))
 
-                vec.big_endian = self.config['firstSymbolInHighOrderBits']
-                pkt += vec.buff
+                    vec = create_binary(
+                        value,
+                        len(value),
+                        big_endian=self.config['firstSymbolInHighOrderBits']
+                    )
+                    if not binary_is_resolvable(vec):
+                        raise AvalonProtocolError(
+                            "After empty masking value is still bad?  "
+                            "Had empty {:d}, got value {:s}".format(empty, value)
+                        )
+
+                    pkt += convert_binary_to_bytes(
+                        vec,
+                        big_endian=self.config['firstSymbolInHighOrderBits']
+                    )
 
                 if hasattr(self.bus, 'channel'):
                     if channel is None:
-                        channel = self.bus.channel.value.integer
+                        channel = convert_binary_to_unsigned(self.bus.channel.value)
                         if channel > self.config["maxChannel"]:
                             raise AvalonProtocolError("Channel value (%d) is greater than maxChannel (%d)" %
                                                       (channel, self.config["maxChannel"]))
-                    elif self.bus.channel.value.integer != channel:
+                    elif convert_binary_to_unsigned(self.bus.channel.value) != channel:
                         raise AvalonProtocolError("Channel value changed during packet")
 
                 if str(self.bus.endofpacket.value) == '1':

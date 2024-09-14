@@ -19,6 +19,7 @@ from scapy.utils import hexdump
 
 from cocotb.triggers import RisingEdge
 
+from cocotb_bus.compat import convert_binary_to_unsigned
 from cocotb_bus.monitors import Monitor
 
 _XGMII_IDLE      = 0x07  # noqa
@@ -67,7 +68,7 @@ class XGMII(Monitor):
 
         Returns a tuple of lists.
         """
-        value = self.signal.value.integer
+        value = convert_binary_to_unsigned(self.signal.value)
         bytes = []
         ctrls = []
         byte_shift = 8

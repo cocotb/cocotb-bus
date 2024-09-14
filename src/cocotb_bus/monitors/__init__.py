@@ -17,7 +17,7 @@ import cocotb
 from cocotb.triggers import Event, Timer, First
 
 from cocotb_bus.bus import Bus
-from cocotb_bus.compat import coroutine, set_event
+from cocotb_bus.compat import coroutine, convert_binary_to_unsigned, set_event
 
 
 class MonitorStatistics:
@@ -166,9 +166,9 @@ class BusMonitor(Monitor):
     def in_reset(self):
         """Boolean flag showing whether the bus is in reset state or not."""
         if self._reset_n is not None:
-            return not bool(self._reset_n.value.integer)
+            return not bool(convert_binary_to_unsigned(self._reset_n.value))
         if self._reset is not None:
-            return bool(self._reset.value.integer)
+            return bool(convert_binary_to_unsigned(self._reset.value))
         return False
 
     def __str__(self):

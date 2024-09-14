@@ -12,12 +12,19 @@ import itertools
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import cocotb
-from cocotb.binary import BinaryValue
 from cocotb.handle import SimHandleBase
 from cocotb.triggers import ClockCycles, Combine, Lock, ReadOnly, RisingEdge
 
 from cocotb_bus.drivers import BusDriver
-from cocotb_bus.compat import coroutine
+from cocotb_bus.compat import (
+    BinaryType,
+    binary_slice,
+    cocotb_2x_or_newer,
+    coroutine,
+    convert_binary_to_bytes,
+    convert_binary_to_unsigned,
+    create_binary,
+)
 
 
 class AXIBurst(enum.IntEnum):
@@ -309,7 +316,7 @@ class AXI4Master(BusDriver):
             while True:
                 await ReadOnly()
                 if str(self.bus.BVALID.value) == '1' and str(self.bus.BREADY.value) == '1':
-                    result = AXIxRESP(self.bus.BRESP.value.integer)
+                    result = AXIxRESP(convert_binary_to_unsigned(self.bus.BRESP.value))
                     break
                 await RisingEdge(self.clock)
 
@@ -330,7 +337,7 @@ class AXI4Master(BusDriver):
         self, address: int, length: int = 1, *,
         size: Optional[int] = None, burst: AXIBurst = AXIBurst.INCR,
         return_rresp: bool = False, sync: bool = True
-    ) -> Union[List[BinaryValue], List[Tuple[BinaryValue, AXIxRESP]]]:
+    ) -> Union[List[BinaryType], List[Tuple[BinaryType, AXIxRESP]]]:
         """Read from an address.
 
         With unaligned reads (when ``address`` is not a multiple of ``size``)
@@ -364,21 +371,22 @@ class AXI4Master(BusDriver):
         """
 
         # Helper function for narrow bursts
-        def shift_and_mask(binvalue: BinaryValue, bytes_num: int,
-                           byte_shift: int) -> BinaryValue:
+        def shift_and_mask(binvalue: BinaryType, bytes_num: int,
+                           byte_shift: int) -> BinaryType:
             start = byte_shift * 8
             end = (bytes_num + byte_shift) * 8
-            return binvalue[len(binvalue) - end:len(binvalue) - start - 1]
+
+            return binary_slice(binvalue, len(binvalue) - end, len(binvalue) - start - 1)
 
         # [0x221100XX, 0x66554433] --> [0x33221100, 0x665544]
         def realign_data(
-            data: Sequence[BinaryValue], size_bits: int, shift: int
-        ) -> List[BinaryValue]:
-            binstr_join = "".join([word.binstr[::-1] for word in data])
+            data: Sequence[BinaryType], size_bits: int, shift: int
+        ) -> List[BinaryType]:
+            binstr_join = "".join([str(word)[::-1] for word in data])
             binstr_join = binstr_join[shift:]
             data_binstr = [binstr_join[i * size_bits:(i + 1) * size_bits][::-1]
                            for i in range(len(data))]
-            return [BinaryValue(value=binstr, n_bits=len(binstr))
+            return [create_binary(binstr, len(binstr), big_endian=True)
                     for binstr in data_binstr]
 
         if size is None:
@@ -430,7 +438,7 @@ class AXI4Master(BusDriver):
                                                     size, byte_offset)
 
                         data.append(beat_value)
-                        rresp.append(AXIxRESP(self.bus.RRESP.value.integer))
+                        rresp.append(AXIxRESP(convert_binary_to_unsigned(self.bus.RRESP.value)))
 
                         if burst is not AXIBurst.FIXED:
                             byte_offset = (byte_offset + size) % rdata_bytes
@@ -456,7 +464,7 @@ class AXI4Master(BusDriver):
             if address % size != 0:
                 shift = (address % size) * 8
                 if burst is AXIBurst.FIXED:
-                    data = [word[0:size * 8 - shift - 1] for word in data]
+                    data = [binary_slice(word, 0, size * 8 - shift - 1) for word in data]
                 else:
                     data = realign_data(data, size * 8, shift)
 
@@ -497,7 +505,7 @@ class AXI4LiteMaster(AXI4Master):
     async def write(
         self, address: int, value: int, byte_enable: Optional[int] = None,
         address_latency: int = 0, data_latency: int = 0, sync: bool = True
-    ) -> BinaryValue:
+    ) -> BinaryType:
         """Write a value to an address.
 
         Args:
@@ -528,10 +536,10 @@ class AXI4LiteMaster(AXI4Master):
             data_latency=data_latency, sync=sync)
 
         # Needed for backwards compatibility
-        return BinaryValue(value=AXIxRESP.OKAY.value, n_bits=2)
+        return create_binary(AXIxRESP.OKAY.value, 2, big_endian=True)
 
     @coroutine
-    async def read(self, address: int, sync: bool = True) -> BinaryValue:
+    async def read(self, address: int, sync: bool = True) -> BinaryType:
         """Read from an address.
 
         Args:
@@ -644,12 +652,13 @@ class AXI4Slave(BusDriver):
 
             while True:
                 if str(self.bus.WVALID.value) == '1':
-                    word = self.bus.WDATA.value
-                    word.big_endian = self.big_endian
                     _burst_diff = burst_length - burst_count
                     _st = _awaddr + (_burst_diff * bytes_in_beat)  # start
                     _end = _awaddr + ((_burst_diff + 1) * bytes_in_beat)  # end
-                    self._memory[_st:_end] = array.array('B', word.buff)
+                    self._memory[_st:_end] = array.array(
+                        'B',
+                        convert_binary_to_bytes(self.bus.WDATA.value, self.big_endian)
+                    )
                     burst_count -= 1
                     if burst_count == 0:
                         break
@@ -675,8 +684,6 @@ class AXI4Slave(BusDriver):
             burst_length = _arlen + 1
             bytes_in_beat = self._size_to_bytes_in_beat(_arsize)
 
-            word = BinaryValue(n_bits=bytes_in_beat*8, bigEndian=self.big_endian)
-
             if __debug__:
                 self.log.debug(
                     "ARADDR  %d\n" % _araddr +
@@ -698,8 +705,11 @@ class AXI4Slave(BusDriver):
                     _burst_diff = burst_length - burst_count
                     _st = _araddr + (_burst_diff * bytes_in_beat)
                     _end = _araddr + ((_burst_diff + 1) * bytes_in_beat)
-                    word.buff = self._memory[_st:_end].tobytes()
-                    self.bus.RDATA.value = word
+                    self.bus.RDATA.value = create_binary(
+                        self._memory[_st:_end].tobytes(),
+                        bytes_in_beat * 8,
+                        self.big_endian
+                    )
                     if burst_count == 1:
                         self.bus.RLAST.value = 1
                 await clock_re

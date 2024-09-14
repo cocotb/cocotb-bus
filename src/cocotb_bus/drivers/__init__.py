@@ -16,7 +16,7 @@ from cocotb.triggers import (Event, RisingEdge, ReadOnly, NextTimeStep,
 from cocotb.handle import SimHandleBase
 
 from cocotb_bus.bus import Bus
-from cocotb_bus.compat import coroutine
+from cocotb_bus.compat import coroutine, convert_binary_to_unsigned
 
 
 class BitDriver:
@@ -260,7 +260,7 @@ class BusDriver(Driver):
         registering more callbacks can occur.
         """
         await ReadOnly()
-        while signal.value.integer != 1:
+        while convert_binary_to_unsigned(signal.value) != 1:
             await RisingEdge(signal)
             await ReadOnly()
         await NextTimeStep()
@@ -274,7 +274,7 @@ class BusDriver(Driver):
         registering more callbacks can occur.
         """
         await ReadOnly()
-        while signal.value.integer != 0:
+        while convert_binary_to_unsigned(signal.value) != 0:
             await Edge(signal)
             await ReadOnly()
         await NextTimeStep()
