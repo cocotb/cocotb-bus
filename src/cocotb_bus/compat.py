@@ -78,15 +78,12 @@ else:
     from cocotb.binary import BinaryValue
     from cocotb.binary import _RESOLVE_TO_CHOICE
 
+    coroutine = cocotb.coroutine
     BinaryType = BinaryValue
 
 
     def set_event(event, data):
         event.set(data)
-
-
-    def coroutine(f):
-        return cocotb.coroutine(f)
 
 
     def create_binary(binstr: Union[int, str, bytes, BinaryValue], bit_count: int,
