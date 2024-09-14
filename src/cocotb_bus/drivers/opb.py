@@ -10,10 +10,9 @@ NOTE: Currently we only support a very small subset of functionality.
 """
 
 from cocotb.triggers import RisingEdge, ReadOnly
-from cocotb.binary import BinaryValue
 
 from cocotb_bus.drivers import BusDriver
-from cocotb_bus.compat import coroutine
+from cocotb_bus.compat import BinaryType, coroutine
 
 
 class OPBException(Exception):
@@ -33,7 +32,7 @@ class OPBMaster(BusDriver):
         self.log.debug("OPBMaster created")
 
     @coroutine
-    async def read(self, address: int, sync: bool = True) -> BinaryValue:
+    async def read(self, address: int, sync: bool = True) -> BinaryType:
         """Issue a request to the bus and block until this comes back.
 
         Simulation time still progresses but syntactically it blocks.

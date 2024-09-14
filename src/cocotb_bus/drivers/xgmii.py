@@ -11,10 +11,10 @@ import zlib
 from scapy.utils import hexdump
 
 from cocotb.triggers import RisingEdge
-from cocotb.binary import BinaryValue
 from cocotb.handle import SimHandleBase
 
 from cocotb_bus.drivers import Driver
+from cocotb_bus.compat import create_binary
 
 _XGMII_IDLE      = 0x07  # noqa
 _XGMII_START     = 0xFB  # noqa
@@ -54,7 +54,6 @@ class _XGMIIBus:
                 byte plus a control bit per byte in the MSBs.
         """
 
-        self._value = BinaryValue(n_bits=nbytes*9, bigEndian=False)
         self._integer = 0
         self._interleaved = interleaved
         self._nbytes = nbytes
@@ -76,8 +75,6 @@ class _XGMIIBus:
             self._integer |= (byte << (index * 8))
             self._integer |= (int(ctrl) << (self._nbytes*8 + index))
 
-        self._value.integer = self._integer
-
     @property
     def value(self):
         """Get the integer representation of this data word suitable for driving
@@ -85,9 +82,9 @@ class _XGMIIBus:
 
         NB clears the value.
         """
-        self._value.integer = self._integer
+        value = create_binary(self._integer, self._nbytes * 9, big_endian=False)
         self._integer = 0
-        return self._value
+        return value
 
     def __len__(self):
         return self._nbytes

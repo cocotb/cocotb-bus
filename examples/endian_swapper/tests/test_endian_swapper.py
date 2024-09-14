@@ -35,7 +35,7 @@ import cocotb
 
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge, ReadOnly
-from cocotb_bus.compat import TestFactory
+from cocotb_bus.compat import TestFactory, convert_binary_to_unsigned
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.drivers.avalon import AvalonSTPkts as AvalonSTDriver
 from cocotb_bus.drivers.avalon import AvalonMaster
@@ -223,8 +223,12 @@ async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
 
     pkt_count = await tb.csr.read(1)
 
-    assert pkt_count.integer == tb.pkts_sent, "DUT recorded %d packets but tb counted %d" % (pkt_count.integer, tb.pkts_sent)
-    dut._log.info("DUT correctly counted %d packets" % pkt_count.integer)
+    assert convert_binary_to_unsigned(pkt_count) == tb.pkts_sent, (
+        "DUT recorded %d packets but tb counted %d" % (
+            convert_binary_to_unsigned(pkt_count), tb.pkts_sent
+        )
+    )
+    dut._log.info("DUT correctly counted %d packets" % convert_binary_to_unsigned(pkt_count))
 
     raise tb.scoreboard.result
 
