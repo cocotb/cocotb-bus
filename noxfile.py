@@ -2,9 +2,13 @@ import nox
 
 
 @nox.session
-@nox.parametrize("cocotb", ["1.6.0", "1.9.0"])
+@nox.parametrize("cocotb", ["1.6.0", "1.9.0", "github-828d127e"])
 def tests(session, cocotb):
-    session.install("pytest", "coverage", f"cocotb=={cocotb}")
+    if cocotb.startswith("github-"):
+        cocotb_req = "git+https://github.com/cocotb/cocotb@" + cocotb[len("github-"):]
+    else:
+        cocotb_req = f"cocotb=={cocotb}"
+    session.install("pytest", "coverage", cocotb_req)
     session.install(".")
     session.run("make", external=True)
 
