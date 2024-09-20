@@ -37,7 +37,7 @@ class AvalonMM(BusDriver):
     _signals = ["address"]
     _optional_signals = ["readdata", "read", "write", "waitrequest",
                          "writedata", "readdatavalid", "byteenable",
-                         "cs"]
+                         "cs", "burstcount"]
 
     def __init__(self, entity, name, clock, **kwargs):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
@@ -62,6 +62,9 @@ class AvalonMM(BusDriver):
         if hasattr(self.bus, "cs"):
             self.bus.cs.setimmediatevalue(0)
 
+        if hasattr(self.bus, "burstcount"):
+            self.bus.burstcount.setimmediatevalue(1)
+
         v = self.bus.address.value
         v.binstr = "x" * len(self.bus.address)
         self.bus.address.setimmediatevalue(v)
@@ -84,7 +87,7 @@ class AvalonMaster(AvalonMM):
         return 2**len(self.bus.address)
 
     @coroutine
-    async def read(self, address: int, sync: bool = True) -> BinaryValue:
+    async def read(self, address: int, sync: bool = True, burstcount : int = 1) -> BinaryValue:
         """Issue a request to the bus and block until this comes back.
 
         Simulation time still progresses
@@ -94,9 +97,10 @@ class AvalonMaster(AvalonMM):
             address: The address to read from.
             sync: Wait for rising edge on clock initially.
                 Defaults to True.
+            burstcount: The number of words to read (default 1).
 
         Returns:
-            The read data value.
+            The read data value, or a list of length *burstcount* of read data values.
 
         Raises:
             :any:`AssertionError`: If master is write-only.
@@ -104,6 +108,10 @@ class AvalonMaster(AvalonMM):
         if not self._can_read:
             self.log.error("Cannot read - have no read signal")
             raise AssertionError("Attempt to read on a write-only AvalonMaster")
+
+        if burstcount > 1 and (not hasattr(self.bus, "burstcount") or not hasattr(self.bus, "readdatavalid")):
+            self.log.error("Burst requested but bus does not have interface signals defined")
+            raise TestError("Attempted burst read on non-compliant AvalonMaster Bus")
 
         await self._acquire_lock()
 
@@ -116,6 +124,8 @@ class AvalonMaster(AvalonMM):
             self.bus.byteenable.value = int("1"*len(self.bus.byteenable), 2)
         if hasattr(self.bus, "cs"):
             self.bus.cs.value = 1
+        if hasattr(self.bus, "burstcount"):
+            self.bus.burstcount.value = burstcount
 
         # Wait for waitrequest to be low
         if hasattr(self.bus, "waitrequest"):
@@ -132,32 +142,42 @@ class AvalonMaster(AvalonMM):
         v.binstr = "x" * len(self.bus.address)
         self.bus.address.value = v
 
-        if hasattr(self.bus, "readdatavalid"):
-            while True:
-                await ReadOnly()
-                if int(self.bus.readdatavalid):
-                    break
-                await RisingEdge(self.clock)
+        if burstcount > 1:
+            data = []
         else:
-            # Assume readLatency = 1 if no readdatavalid
-            # FIXME need to configure this,
-            # should take a dictionary of Avalon properties.
-            await ReadOnly()
+            data = self.bus.readdata.value
 
-        # Get the data
-        data = self.bus.readdata.value
+        for burst_index in range(burstcount):
+            if hasattr(self.bus, "readdatavalid"):
+                while True:
+                    await ReadOnly()
+                    if int(self.bus.readdatavalid):
+                        break
+                    await RisingEdge(self.clock)
+            else:
+                # Assume readLatency = 1 if no readdatavalid
+                # FIXME need to configure this,
+                # should take a dictionary of Avalon properties.
+                await ReadOnly()
+
+            # Get the data
+            if burstcount == 1:
+                data = self.bus.readdata.value
+            else:
+                data.append(self.bus.readdata.value)
+            await RisingEdge(self.clock)
 
         self._release_lock()
         return data
 
     @coroutine
-    async def write(self, address: int, value: int) -> None:
+    async def write(self, address: int, value: Union[int, list]) -> None:
         """Issue a write to the given address with the specified
         value.
 
         Args:
             address: The address to write to.
-            value: The data value to write.
+            value: The data value to write, may be a list for a burst write.
 
         Raises:
             :any:`AssertionError`: If master is read-only.
@@ -166,24 +186,45 @@ class AvalonMaster(AvalonMM):
             self.log.error("Cannot write - have no write signal")
             raise AssertionError("Attempt to write on a read-only AvalonMaster")
 
+        burstcount = 1
+        if isinstance(value, list):
+            burstcount = len(value)
+            # convert to single integer for backwards compatibility
+            if burstcount == 1:
+                value = value[0]
+
+        self.log.debug("burstcount was %d", burstcount)
+
+        if burstcount > 1 and not hasattr(self.bus, "burstcount"):
+            self.log.error("Burst requested but bus does not have interface signals defined")
+            raise TestError("Attempted burst write on non-compliant AvalonMaster Bus")
+
         await self._acquire_lock()
 
         # Apply values to bus
         await RisingEdge(self.clock)
         self.bus.address.value = address
-        self.bus.writedata.value = value
         self.bus.write.value = 1
         if hasattr(self.bus, "byteenable"):
             self.bus.byteenable.value = int("1"*len(self.bus.byteenable), 2)
         if hasattr(self.bus, "cs"):
             self.bus.cs.value = 1
+        if hasattr(self.bus, "burstcount"):
+            self.bus.burstcount.value = burstcount
 
-        # Wait for waitrequest to be low
-        if hasattr(self.bus, "waitrequest"):
-            await self._wait_for_nsignal(self.bus.waitrequest)
+        for burstindex in range(burstcount):
+            if burstcount == 1:
+                self.bus.writedata.value = value
+            else:
+                self.bus.writedata.value = value[burstindex]
+
+            # Wait for waitrequest to be low
+            if hasattr(self.bus, "waitrequest"):
+                await self._wait_for_nsignal(self.bus.waitrequest)
+
+            await RisingEdge(self.clock)
 
         # Deassert write
-        await RisingEdge(self.clock)
         self.bus.write.value = 0
         if hasattr(self.bus, "byteenable"):
             self.bus.byteenable.value = 0
