@@ -32,6 +32,7 @@ if __name__ == "__main__":
         install_requires=[
             "cocotb>=1.6.0",
             "scapy",
+            "packaging",
         ],
         python_requires='>=3.6'
     )
