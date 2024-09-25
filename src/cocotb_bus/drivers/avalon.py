@@ -49,25 +49,25 @@ class AvalonMM(BusDriver):
         self._can_read = False
         self._can_write = False
 
-        # Drive some sensible defaults (setimmediatevalue to avoid x asserts)
+        # Drive some sensible defaults
         if hasattr(self.bus, "read"):
-            self.bus.read.setimmediatevalue(0)
+            self.bus.read.value = 0
             self._can_read = True
 
         if hasattr(self.bus, "write"):
-            self.bus.write.setimmediatevalue(0)
+            self.bus.write.value = 0
             self.bus.writedata.value = create_binary_from_other(self.bus.writedata.value,
                                                                 "x" * len(self.bus.writedata))
             self._can_write = True
 
         if hasattr(self.bus, "byteenable"):
-            self.bus.byteenable.setimmediatevalue(0)
+            self.bus.byteenable.value = 0
 
         if hasattr(self.bus, "cs"):
-            self.bus.cs.setimmediatevalue(0)
+            self.bus.cs.value = 0
 
-        self.bus.address.setimmediatevalue(create_binary_from_other(self.bus.address.value,
-                                                                    "x" * len(self.bus.address)))
+        self.bus.address.value = create_binary_from_other(self.bus.address.value,
+                                                          "x" * len(self.bus.address))
 
     def read(self, address):
         pass
@@ -260,10 +260,10 @@ class AvalonMemory(BusDriver):
         self._coro = cocotb.start_soon(self._respond())
 
         if hasattr(self.bus, "readdatavalid"):
-            self.bus.readdatavalid.setimmediatevalue(0)
+            self.bus.readdatavalid.value = 0
 
         if hasattr(self.bus, "waitrequest"):
-            self.bus.waitrequest.setimmediatevalue(0)
+            self.bus.waitrequest.value = 0
 
         if hasattr(self.bus, "burstcount"):
             if hasattr(self.bus, "readdatavalid"):
@@ -275,7 +275,7 @@ class AvalonMemory(BusDriver):
                 self.bus.waitrequest.value = 0
 
         if hasattr(self.bus, "readdatavalid"):
-            self.bus.readdatavalid.setimmediatevalue(0)
+            self.bus.readdatavalid.value = 0
 
     def _pad(self):
         """Pad response queue up to read latency."""

@@ -71,12 +71,12 @@ class AXI4Master(BusDriver):
                  **kwargs: Any):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
 
-        # Drive some sensible defaults (setimmediatevalue to avoid x asserts)
-        self.bus.AWVALID.setimmediatevalue(0)
-        self.bus.WVALID.setimmediatevalue(0)
-        self.bus.ARVALID.setimmediatevalue(0)
-        self.bus.BREADY.setimmediatevalue(1)
-        self.bus.RREADY.setimmediatevalue(1)
+        # Drive some sensible defaults
+        self.bus.AWVALID.value = 0
+        self.bus.WVALID.value = 0
+        self.bus.ARVALID.value = 0
+        self.bus.BREADY.value = 1
+        self.bus.RREADY.value = 1
 
         # Set the default value (0) for the unsupported signals, which
         # translate to:
@@ -91,7 +91,7 @@ class AXI4Master(BusDriver):
             "ARID", "ARREGION", "ARLOCK", "ARCACHE", "ARPROT", "ARQOS"]
         for signal in unsupported_signals:
             try:
-                getattr(self.bus, signal).setimmediatevalue(0)
+                getattr(self.bus, signal).value = 0
             except AttributeError:
                 pass
 
@@ -596,10 +596,10 @@ class AXI4Slave(BusDriver):
         self.clock = clock
 
         self.big_endian = big_endian
-        self.bus.ARREADY.setimmediatevalue(1)
-        self.bus.RVALID.setimmediatevalue(0)
-        self.bus.RLAST.setimmediatevalue(0)
-        self.bus.AWREADY.setimmediatevalue(1)
+        self.bus.ARREADY.value = 1
+        self.bus.RVALID.value = 0
+        self.bus.RLAST.value = 0
+        self.bus.AWREADY.value = 1
         self._memory = memory
 
         self.write_address_busy = Lock("%s_wabusy" % name)

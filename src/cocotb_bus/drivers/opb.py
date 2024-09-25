@@ -28,7 +28,7 @@ class OPBMaster(BusDriver):
 
     def __init__(self, entity, name, clock, **kwargs):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
-        self.bus.select.setimmediatevalue(0)
+        self.bus.select.value = 0
         self.log.debug("OPBMaster created")
 
     @coroutine
