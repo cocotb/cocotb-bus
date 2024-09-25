@@ -26,7 +26,7 @@ jobs:
       matrix:
         python-version: ["3.6", "3.12"]
         # NOTE: align with versions in noxfile.py:
-        cocotb-version: ["1.6.0", "1.9.0", "github-828d127e"]
+        cocotb-version: ["1.6.0", "1.9.0", "github-b9dd5ee1"]
         include:
         - sim: icarus
           sim-version: apt
