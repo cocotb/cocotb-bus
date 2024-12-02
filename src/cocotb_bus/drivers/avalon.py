@@ -28,6 +28,7 @@ from cocotb_bus.compat import (
     coroutine,
 )
 
+from typing import Optional
 
 class AvalonMM(BusDriver):
     """Avalon Memory Mapped Interface (Avalon-MM) Driver.
@@ -474,7 +475,7 @@ class AvalonST(ValidatedBusDriver):
 
     _default_config = {"firstSymbolInHighOrderBits" : True}
 
-    def __init__(self, entity, name, clock, *, config={}, **kwargs):
+    def __init__(self, entity, clock, *, name: Optional[str] = None, config={}, **kwargs):
         ValidatedBusDriver.__init__(self, entity, name, clock, **kwargs)
 
         self.config = AvalonST._default_config.copy()
@@ -565,7 +566,7 @@ class AvalonSTPkts(ValidatedBusDriver):
         "readyLatency"                  : 0
     }
 
-    def __init__(self, entity, name, clock, *, config={}, **kwargs):
+    def __init__(self, entity, clock, *, name: Optional[str] = None, config={}, **kwargs):
         ValidatedBusDriver.__init__(self, entity, name, clock, **kwargs)
 
         self.config = AvalonSTPkts._default_config.copy()

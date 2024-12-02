@@ -25,6 +25,7 @@ from cocotb_bus.compat import (
 )
 from cocotb_bus.monitors import BusMonitor
 
+from typing import Optional
 
 class AvalonProtocolError(Exception):
     pass
@@ -41,7 +42,7 @@ class AvalonST(BusMonitor):
 
     _default_config = {"firstSymbolInHighOrderBits": True}
 
-    def __init__(self, entity, name, clock, *, config={}, **kwargs):
+    def __init__(self, entity, clock, *, name: Optional[str] = None, config={}, **kwargs):
         BusMonitor.__init__(self, entity, name, clock, **kwargs)
 
         self.config = self._default_config.copy()
@@ -92,7 +93,7 @@ class AvalonSTPkts(BusMonitor):
         "invalidTimeout"                : 0,
     }
 
-    def __init__(self, entity, name, clock, *, config={}, report_channel=False, **kwargs):
+    def __init__(self, entity, clock, *, name: Optional[str] = None, config={}, report_channel=False, **kwargs):
         BusMonitor.__init__(self, entity, name , clock, **kwargs)
 
         self.config = self._default_config.copy()
@@ -149,6 +150,10 @@ class AvalonSTPkts(BusMonitor):
             await clkedge
 
             if self.in_reset:
+                pkt = b""
+                in_pkt = False
+                invalid_cyclecount = 0
+                channel = None
                 continue
 
             if valid():
