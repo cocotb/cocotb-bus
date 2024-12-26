@@ -78,11 +78,6 @@ async def test_idcode(dut):
     await RisingEdge(tb.clk)
     assert 0x1 == tb.bus0.c.value
     
-#     tb.bus1.a.value = 1
-#     tb.bus1.b.value = 1
-#     await RisingEdge(tb.clk)
-#     await RisingEdge(tb.clk)
-#    
     tb.bus1.a.value = 0
     tb.bus1.b.value = 0
     await RisingEdge(tb.clk)
