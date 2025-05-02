@@ -12,7 +12,7 @@ NB Currently we only support a very small subset of functionality
 """
 
 import random
-from typing import Iterable, Union, Optional
+from typing import Iterable, Union, Optional, List, Dict
 
 from scapy.utils import hexdump
 
@@ -45,7 +45,7 @@ class AvalonMM(BusDriver):
                          "writedata", "readdatavalid", "byteenable",
                          "cs"]
 
-    def __init__(self, entity, name, clock, **kwargs):
+    def __init__(self, entity, clock, name: Optional[str] = None, **kwargs):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         self._can_read = False
         self._can_write = False
@@ -80,7 +80,7 @@ class AvalonMM(BusDriver):
 class AvalonMaster(AvalonMM):
     """Avalon Memory Mapped Interface (Avalon-MM) Master."""
 
-    def __init__(self, entity, name, clock, **kwargs):
+    def __init__(self, entity, clock, name: Optional[str] = None, **kwargs):
         AvalonMM.__init__(self, entity, name, clock, **kwargs)
         self.log.debug("AvalonMaster created")
 
@@ -212,7 +212,7 @@ class AvalonMemory(BusDriver):
         "MaxWaitReqLen": 4,  # maximum value of waitrequest
     }
 
-    def __init__(self, entity, name, clock, readlatency_min=1,
+    def __init__(self, entity, clock, name: Optional[str] = None, readlatency_min=1,
                  readlatency_max=1, memory=None, avl_properties={}, **kwargs):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
 
@@ -466,6 +466,14 @@ class AvalonMemory(BusDriver):
                     if self._avalon_properties.get("WriteBurstWaitReq", True):
                         self.bus.waitrequest.value = 1
 
+    def count_mem(self):
+        if isinstance(self._mem, Union[Dict, List]):
+            return len(self._mem)
+        else:
+            self.log.error("Only supports dictionary or lists as memories.")
+
+    def read_mem(self):
+        return self._mem
 
 class AvalonST(ValidatedBusDriver):
     """Avalon Streaming Interface (Avalon-ST) Driver"""
