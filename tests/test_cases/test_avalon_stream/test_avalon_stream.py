@@ -56,7 +56,11 @@ class AvalonSTTB(object):
 
         self.clkedge = RisingEdge(dut.clk)
 
-        self.stream_in = AvalonSTDriver(self.dut, "asi", dut.clk)
+        self.stream_in = AvalonSTDriver(
+            self.dut,
+            "asi",
+            dut.clk,
+        )
         self.stream_out = AvalonSTMonitor(self.dut, "aso", dut.clk)
         self.scoreboard = Scoreboard(self.dut, fail_immediately=True)
 
