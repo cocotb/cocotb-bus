@@ -12,6 +12,7 @@ NB Currently we only support a very small subset of functionality.
 """
 
 import warnings
+from typing import Optional
 
 from cocotb.triggers import RisingEdge
 from scapy.utils import hexdump
@@ -35,7 +36,7 @@ class AvalonST(BusMonitor):
 
     _default_config = {"firstSymbolInHighOrderBits": True}
 
-    def __init__(self, entity, name, clock, *, config={}, **kwargs):
+    def __init__(self, entity, name: Optional[str], clock, *, config={}, **kwargs):
         BusMonitor.__init__(self, entity, name, clock, **kwargs)
 
         self.config = self._default_config.copy()
@@ -92,7 +93,14 @@ class AvalonSTPkts(BusMonitor):
     }
 
     def __init__(
-        self, entity, name, clock, *, config={}, report_channel=False, **kwargs
+        self,
+        entity,
+        name: Optional[str],
+        clock,
+        *,
+        config={},
+        report_channel=False,
+        **kwargs,
     ):
         BusMonitor.__init__(self, entity, name, clock, **kwargs)
 
@@ -250,7 +258,7 @@ class AvalonSTPktsWithChannel(AvalonSTPkts):
     This class is deprecated. Use AvalonSTPkts(..., report_channel=True, ...)
     """
 
-    def __init__(self, entity, name, clock, **kwargs):
+    def __init__(self, entity, name: Optional[str], clock, **kwargs):
         warnings.warn(
             "Use of AvalonSTPktsWithChannel is deprecated\n"
             "\tUse AvalonSTPkts(..., report_channel=True, ...)",

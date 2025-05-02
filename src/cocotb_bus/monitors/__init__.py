@@ -74,7 +74,7 @@ class Monitor:
         self._thread = cocotb.start_soon(self._monitor_recv())
 
     def kill(self):
-        """Kill the monitor coroutine."""
+        """Kill monitor coroutine."""
         if self._thread:
             self._thread.kill()
             self._thread = None
