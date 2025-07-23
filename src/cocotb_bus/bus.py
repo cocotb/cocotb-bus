@@ -7,6 +7,7 @@
 """Common bus related functionality.
 A bus is simply defined as a collection of signals.
 """
+from cocotb.handle import HierarchyObject, ModifiableObject
 
 def _build_sig_attr_dict(signals):
     if isinstance(signals, dict):
@@ -23,9 +24,6 @@ class Bus:
     For example a bus ``stream_in`` with signals ``valid`` and ``data`` is assumed
     to be named ``dut.stream_in_valid`` and ``dut.stream_in_data`` (with
     the default separator '_').
-
-    TODO:
-        Support for ``struct``/``record`` ports where signals are member names.
     """
 
     def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None):
@@ -33,7 +31,7 @@ class Bus:
         Args:
             entity (SimHandle): :class:`SimHandle` instance to the entity containing the bus.
             name (str): Name of the bus. ``None`` for a nameless bus, e.g. bus-signals
-                in an interface or a ``modport`` (untested on ``struct``/``record``,
+                in an interface or a ``modport`` (untested on ``record``,
                 but could work here as well).
             signals (list or dict): In the case of an object (passed to :func:`drive`/:func:`capture`)
                 that has the same attribute names as the signal names of the bus,
@@ -80,6 +78,15 @@ class Bus:
                 return getattr(obj, a)
         return None
 
+    def _process_bus(self, obj, case_insensitive):
+        signals = []
+        for tmpobj in iter(obj):
+            ins_list = [isinstance(tmpobj, x) for x in (HierarchyObject, ModifiableObject)]
+            if True in ins_list:
+                assert hasattr(tmpobj, "_name"), "Name attribute is required!"
+                signals.append(tmpobj._name)
+        return Bus(obj, None, signals=signals, case_insensitive=case_insensitive)
+
     def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True):
         self._entity._log.debug("Signal name {}, idx {}".format(signame, array_idx))
         if case_insensitive:
@@ -88,6 +95,8 @@ class Bus:
             handle = getattr(self._entity, signame)
         if array_idx is not None:
             handle = handle[array_idx]
+        if isinstance(handle, HierarchyObject):
+            handle = self._process_bus(handle, case_insensitive)
         setattr(self, attr_name, handle)
         self._signals[attr_name] = getattr(self, attr_name)
 
@@ -113,7 +122,10 @@ class Bus:
                 else:
                     continue
             val = getattr(obj, attr_name)
-            hdl.value = val
+            if isinstance(hdl, Bus):
+                hdl.drive(val, strict)
+            else:
+                hdl.value = val
 
     def capture(self):
         """Capture the values from the bus, returning an object representing the capture.
@@ -121,6 +133,8 @@ class Bus:
         Returns:
             dict: A dictionary that supports access by attribute,
             where each attribute corresponds to each signal's value.
+            If a node is a Bus type than the returned structure is a dictionary
+            with captured values.
         Raises:
             RuntimeError: If signal not present in bus,
                 or attempt to modify a bus capture.
@@ -140,8 +154,10 @@ class Bus:
 
         _capture = _Capture()
         for attr_name, hdl in self._signals.items():
-            _capture[attr_name] = hdl.value
-
+            if isinstance(hdl, Bus):
+                _capture[attr_name] = hdl.capture()
+            else:
+                _capture[attr_name] = hdl.value
         return _capture
 
     def sample(self, obj, strict=False):
@@ -169,7 +185,14 @@ class Bus:
             # Try to use the get/set_binstr methods because they will not clobber the properties
             # of obj.attr_name on assignment.  Otherwise use setattr() to crush whatever type of
             # object was in obj.attr_name with hdl.value:
+            #
+            # We also need to take a Bus instance into the account and do a recursive call if
+            # such instance is being detected
             try:
-                getattr(obj, attr_name).set_binstr(hdl.value.get_binstr())
+                a_obj = getattr(obj, attr_name)
+                if isinstance(hdl, Bus):
+                    hdl.sample(a_obj, strict)
+                else:
+                    a_obj.set_binstr(hdl.value.get_binstr())
             except AttributeError:
                 setattr(obj, attr_name, hdl.value)
