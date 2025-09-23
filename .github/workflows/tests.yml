@@ -24,40 +24,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cocotb-version: ["1.6.0", "1.9.0", "2.0.0"]
-        # NOTE: align with versions in noxfile.py:
+        cocotb-version: ["1.6.0", "1.9.0", "github-de51adf"]
+        python-version: ["3.6", "3.12"]
+        
+        sim: [icarus]
+        sim-version: [apt]
+        lang: [verilog]
+        os: [ubuntu-22.04]
+
         include:
           - python-version: "3.6"
             python-setup: pyenv
-            sim: icarus
-            sim-version: apt
-            lang: verilog
-            os: ubuntu-22.04
-          
-          - python-version: "3.12"
-            sim: icarus
-            sim-version: apt
-            lang: verilog
-            os: ubuntu-22.04
+
     timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v4
 
     # Install python
-    - name: Set up Python ${{matrix.python-version}} (setup-python)
-      if: matrix.setup_python == ''
+    - name: Set up Python ${{matrix.python-version}} (python-setup)
+      if: matrix.python-setup == ''
       uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up Python ${{matrix.python-version}} (pyenv pt.1)
-      if: matrix.setup_python == 'pyenv'
+      if: matrix.python-setup == 'pyenv'
       uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
       with:
         default: ${{matrix.python-version}}
         command: pip install -U pip  # upgrade pip after installing python
     - name: Set up Python ${{matrix.python-version}} (pyenv pt.2)
-      if: matrix.setup_python == 'pyenv'
+      if: matrix.python-setup == 'pyenv'
       run: |
         pyenv install ${{matrix.python-version}}
         pyenv global ${{matrix.python-version}}
