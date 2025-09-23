@@ -18,8 +18,8 @@ def TestFactory(*args, **kwargs):
 
 cocotb_2x_or_newer = parse_version(cocotb.__version__) > parse_version("2.dev0")
 if cocotb_2x_or_newer:
-    from cocotb.types import LogicArray, Range
-    BinaryType = LogicArray
+    from cocotb.types import LogicArray, Logic, Range
+    BinaryType = Union[LogicArray, Logic]
 
 
     def set_event(event, data):
@@ -31,6 +31,9 @@ if cocotb_2x_or_newer:
 
 
     def create_binary(binstr: Union[int, str, bytes, LogicArray], bit_count: int, big_endian: bool):
+        if bit_count == 1:
+            return Logic(binstr)
+
         if big_endian:
             range=Range(0, 'to', bit_count - 1)
         else:
@@ -54,12 +57,14 @@ if cocotb_2x_or_newer:
 
 
     def convert_binary_to_bytes(value: BinaryType, big_endian: bool):
-        return value.to_bytes('big' if big_endian else 'little')
+        return value.to_bytes(byteorder='big' if big_endian else 'little')
 
 
     def convert_binary_to_unsigned(value: Union[int, BinaryType]):
         if isinstance(value, int):
             return value
+        if isinstance(value, Logic):
+            return int(value)
         return value.to_unsigned()
 
 
@@ -74,9 +79,20 @@ if cocotb_2x_or_newer:
         end = len(value) - end - 1 + offset
         return value[start:end]
 
+
+    def test_success():
+        cocotb.pass_test()
+
+    
+    def join(task):
+        return task
+
+
 else:
     from cocotb.binary import BinaryValue
     from cocotb.binary import _RESOLVE_TO_CHOICE
+    from cocotb.result import TestSuccess
+    from cocotb.triggers import Join
 
     coroutine = cocotb.coroutine
     BinaryType = BinaryValue
@@ -113,6 +129,14 @@ else:
     def binary_slice(value: BinaryType, start: int, end: int):
         # On 2.x the default slice direction is downto, whereas on 1.9.x it's to
         return value[start:end]
+
+
+    def test_success():
+        return TestSuccess()
+    
+    
+    def join(task):
+        return Join(task)
 
 
 def binary_is_resolvable(value: BinaryType):

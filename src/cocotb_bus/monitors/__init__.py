@@ -54,7 +54,7 @@ class Monitor:
         if self._event is not None:
             self._event.data = None  # FIXME: This attribute should be removed on next API break
         self._wait_event = Event()
-        self._wait_event.data = None
+        self._wait_event_data = None
         self._recvQ = deque()
         self._callbacks = []
         self.stats = MonitorStatistics()
@@ -111,7 +111,7 @@ class Monitor:
         else:
             await self._wait_event.wait()
 
-        return self._wait_event.data
+        return self._wait_event_data
 
     # this is not `async` so that we fail in `__init__` on subclasses without it
     def _monitor_recv(self):
@@ -141,7 +141,8 @@ class Monitor:
 
         # If anyone was waiting then let them know
         if self._wait_event is not None:
-            set_event(self._wait_event, transaction)
+            self._wait_event.set()
+            self._wait_event_data = transaction
             self._wait_event.clear()
 
 

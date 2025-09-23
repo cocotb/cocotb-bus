@@ -53,7 +53,7 @@ class TestMonitor(BusMonitor):
 
 @cocotb.test(expect_error=AttributeError if cocotb.SIM_NAME.lower().startswith('ghdl') else ())
 async def test_array_buses(dut):
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 10, "ns")
     cocotb.start_soon(clock.start())
     clkedge = RisingEdge(dut.clk)
     in_data_0 = TestDriver(dut, "in", dut.clk, array_idx=0)

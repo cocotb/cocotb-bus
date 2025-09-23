@@ -197,7 +197,7 @@ class EndianSwapperTB(object):
 async def run_test(dut, data_in=None, config_coroutine=None, idle_inserter=None,
                    backpressure_inserter=None):
 
-    cocotb.start_soon(Clock(dut.clk, 10, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, 10, 'ns').start())
     tb = EndianSwapperTB(dut)
 
     await tb.reset()
