@@ -124,4 +124,3 @@ PyMODINIT_FUNC PyInit_io_module(void)
 {
     return PyModule_Create(&io_module);
 }
-

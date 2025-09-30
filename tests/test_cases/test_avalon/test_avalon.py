@@ -38,7 +38,7 @@ from cocotb_bus.drivers.avalon import AvalonMemory
 
 
 class BurstAvlReadTest(object):
-    """ class to test avalon burst """
+    """class to test avalon burst"""
 
     def __init__(self, dut, avlproperties={}):
         self.dut = dut
@@ -49,18 +49,22 @@ class BurstAvlReadTest(object):
         # Bytes aligned memory
         self.memdict = {value: value for value in range(0x1000)}
 
-        self.avl32 = AvalonMemory(dut, "master", dut.clk,
-                                  memory=self.memdict,
-                                  readlatency_min=0,
-                                  avl_properties=avlproperties)
+        self.avl32 = AvalonMemory(
+            dut,
+            "master",
+            dut.clk,
+            memory=self.memdict,
+            readlatency_min=0,
+            avl_properties=avlproperties,
+        )
 
     async def init_sig(self, burstcount_w, address):
-        """ Initialize all signals """
+        """Initialize all signals"""
         await Timer(1, "ns")
         self.dut.reset.value = 0
         self.dut.user_read_buffer.value = 0
         self.dut.control_read_base.value = address
-        self.dut.control_read_length.value = burstcount_w*4
+        self.dut.control_read_length.value = burstcount_w * 4
         self.dut.control_fixed_location.value = 0
         self.dut.control_go.value = 0
         self.dut.master_waitrequest.value = 0
@@ -68,9 +72,9 @@ class BurstAvlReadTest(object):
 
 @cocotb.test()
 async def test_burst_read(dut):
-    """ Testing burst read """
+    """Testing burst read"""
     wordburstcount = 16
-    address = 10*wordburstcount
+    address = 10 * wordburstcount
 
     bart = BurstAvlReadTest(dut, {"readLatency": 10})
     await bart.init_sig(wordburstcount, address)
@@ -91,8 +95,7 @@ async def test_burst_read(dut):
         await RisingEdge(dut.clk)
         value = dut.user_buffer_data.value
         for i in range(databuswidthB):
-            read_mem[address + burst*databuswidthB + i] = \
-                (value >> i*8)& 0xFF
+            read_mem[address + burst * databuswidthB + i] = (value >> i * 8) & 0xFF
         burst += 1
 
     dut.user_read_buffer.value = 0
@@ -110,8 +113,12 @@ async def test_burst_read(dut):
             else:
                 memdictvalue = hex(memdictvalue)
             assert False, (
-                "Wrong value read in memory : read_mem[" + hex(key) + "] = " +
-                hex(value) + " must be " + memdictvalue
+                "Wrong value read in memory : read_mem["
+                + hex(key)
+                + "] = "
+                + hex(value)
+                + " must be "
+                + memdictvalue
             )
 
     await Timer(1, "ns")

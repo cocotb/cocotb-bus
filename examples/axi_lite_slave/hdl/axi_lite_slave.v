@@ -96,7 +96,7 @@ localparam      SEND_WRITE_RESP     = 4'h3;
 localparam      READ_WAIT_FOR_USER  = 4'h4;
 localparam      SEND_READ_DATA      = 4'h5;
 
-//registes/wires
+//registers/wires
 reg   [3:0]                           state = IDLE;
 
 //submodules

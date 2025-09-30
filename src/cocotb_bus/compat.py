@@ -20,8 +20,10 @@ def TestFactory(*args, **kwargs):
 cocotb_2x_or_newer = parse_version(cocotb.__version__) > parse_version("2.dev0")
 if cocotb_2x_or_newer:
     from cocotb.types import Logic, LogicArray, Range
+
     BinaryType = Union[LogicArray, Logic]
 
+    BinaryType = LogicArray
 
     def set_event(event, data):
         event.data = data
@@ -30,15 +32,16 @@ if cocotb_2x_or_newer:
     def coroutine(f):
         return f
 
-
-    def create_binary(binstr: Union[int, str, bytes, LogicArray], bit_count: int, big_endian: bool):
+    def create_binary(
+        binstr: Union[int, str, bytes, LogicArray], bit_count: int, big_endian: bool
+    ):
         if bit_count == 1:
             return Logic(binstr)
 
         if big_endian:
-            range=Range(0, 'to', bit_count - 1)
+            range = Range(0, "to", bit_count - 1)
         else:
-            range=Range(bit_count - 1, 'downto', 0)
+            range = Range(bit_count - 1, "downto", 0)
 
         if isinstance(binstr, bytes):
             if not big_endian:
@@ -52,14 +55,11 @@ if cocotb_2x_or_newer:
 
         return LogicArray(binstr, range=range)
 
-
     def create_binary_from_other(value: BinaryType, binstr: Union[int, str, bytes]):
         return LogicArray(value=binstr, range=value.range)
 
-
     def convert_binary_to_bytes(value: BinaryType, big_endian: bool):
-        return value.to_bytes(byteorder='big' if big_endian else 'little')
-
+        return value.to_bytes(byteorder="big" if big_endian else "little")
 
     def convert_binary_to_unsigned(value: Union[int, BinaryType]):
         if isinstance(value, int):
@@ -67,7 +67,6 @@ if cocotb_2x_or_newer:
         if isinstance(value, Logic):
             return int(value)
         return value.to_unsigned()
-
 
     def binary_slice(value: BinaryType, start: int, end: int):
         # On 2.x the default slice direction is downto, whereas on 1.9.x it's to
@@ -80,7 +79,6 @@ if cocotb_2x_or_newer:
         end = len(value) - end - 1 + offset
         return value[start:end]
 
-
     def test_success():
         cocotb.pass_test()
 
@@ -91,26 +89,26 @@ else:
     coroutine = cocotb.coroutine
     BinaryType = BinaryValue
 
-
     def set_event(event, data):
         event.set(data)
 
-
-    def create_binary(binstr: Union[int, str, bytes, BinaryValue], bit_count: int,
-                      big_endian: bool):
+    def create_binary(
+        binstr: Union[int, str, bytes, BinaryValue], bit_count: int, big_endian: bool
+    ):
         return BinaryValue(value=binstr, n_bits=bit_count, bigEndian=big_endian)
 
-
     def create_binary_from_other(value: BinaryType, binstr: Union[int, str, bytes]):
-        return BinaryValue(value=binstr, n_bits=value.n_bits, bigEndian=value.big_endian)
-
+        return BinaryValue(
+            value=binstr, n_bits=value.n_bits, bigEndian=value.big_endian
+        )
 
     def convert_binary_to_bytes(value: BinaryType, big_endian: bool):
         # Setting bigEndian does not affect initialization because value.binstr already is adjusted
         # to contain n_bits number of bits. Only access via buff is affected.
-        value = BinaryValue(value=value.binstr, n_bits=value.n_bits, bigEndian=big_endian)
+        value = BinaryValue(
+            value=value.binstr, n_bits=value.n_bits, bigEndian=big_endian
+        )
         return value.buff
-
 
     def convert_binary_to_unsigned(value: Union[int, BinaryType]):
         # In 1.9.x code has more automatic conversions, therefore code does not consistently
@@ -119,11 +117,9 @@ else:
             return value
         return value.integer
 
-
     def binary_slice(value: BinaryType, start: int, end: int):
         # On 2.x the default slice direction is downto, whereas on 1.9.x it's to
         return value[start:end]
-
 
     def test_success():
         return TestSuccess()

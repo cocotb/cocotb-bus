@@ -26,7 +26,7 @@ jobs:
       matrix:
         cocotb-version: ["1.6.0", "1.9.0", "github-de51adf"]
         python-version: ["3.6", "3.12"]
-        
+
         sim: [icarus]
         sim-version: [apt]
         lang: [verilog]

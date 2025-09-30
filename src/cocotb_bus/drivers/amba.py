@@ -41,7 +41,7 @@ class AXIxRESP(enum.IntEnum):
 
 
 class AXIProtocolError(Exception):
-    def __init__(self,  message: str, xresp: AXIxRESP):
+    def __init__(self, message: str, xresp: AXIxRESP):
         super().__init__(message)
         self.xresp = xresp
 
@@ -57,18 +57,53 @@ class AXI4Master(BusDriver):
     """
 
     _signals = [
-        "AWVALID", "AWADDR", "AWREADY", "AWID", "AWLEN", "AWSIZE", "AWBURST",
-        "WVALID", "WREADY", "WDATA", "WSTRB",
-        "BVALID", "BREADY", "BRESP", "BID",
-        "ARVALID", "ARADDR", "ARREADY", "ARID", "ARLEN", "ARSIZE", "ARBURST",
-        "RVALID", "RREADY", "RRESP", "RDATA", "RID", "RLAST"]
+        "AWVALID",
+        "AWADDR",
+        "AWREADY",
+        "AWID",
+        "AWLEN",
+        "AWSIZE",
+        "AWBURST",
+        "WVALID",
+        "WREADY",
+        "WDATA",
+        "WSTRB",
+        "BVALID",
+        "BREADY",
+        "BRESP",
+        "BID",
+        "ARVALID",
+        "ARADDR",
+        "ARREADY",
+        "ARID",
+        "ARLEN",
+        "ARSIZE",
+        "ARBURST",
+        "RVALID",
+        "RREADY",
+        "RRESP",
+        "RDATA",
+        "RID",
+        "RLAST",
+    ]
 
-    _optional_signals = ["AWREGION", "AWLOCK", "AWCACHE", "AWPROT", "AWQOS",
-                         "WLAST",
-                         "ARREGION", "ARLOCK", "ARCACHE", "ARPROT", "ARQOS"]
+    _optional_signals = [
+        "AWREGION",
+        "AWLOCK",
+        "AWCACHE",
+        "AWPROT",
+        "AWQOS",
+        "WLAST",
+        "ARREGION",
+        "ARLOCK",
+        "ARCACHE",
+        "ARPROT",
+        "ARQOS",
+    ]
 
-    def __init__(self, entity: SimHandleBase, name: str, clock: SimHandleBase,
-                 **kwargs: Any):
+    def __init__(
+        self, entity: SimHandleBase, name: str, clock: SimHandleBase, **kwargs: Any
+    ):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
 
         # Drive some sensible defaults
@@ -87,8 +122,19 @@ class AXI4Master(BusDriver):
         #  * Unprivileged, secure data access
         #  * No QoS
         unsupported_signals = [
-            "AWID", "AWREGION", "AWLOCK", "AWCACHE", "AWPROT", "AWQOS",
-            "ARID", "ARREGION", "ARLOCK", "ARCACHE", "ARPROT", "ARQOS"]
+            "AWID",
+            "AWREGION",
+            "AWLOCK",
+            "AWCACHE",
+            "AWPROT",
+            "AWQOS",
+            "ARID",
+            "ARREGION",
+            "ARLOCK",
+            "ARCACHE",
+            "ARPROT",
+            "ARQOS",
+        ]
         for signal in unsupported_signals:
             try:
                 getattr(self.bus, signal).value = 0
@@ -113,8 +159,9 @@ class AXI4Master(BusDriver):
                 raise ValueError("Maximum burst length for INCR bursts is 256")
         elif burst is AXIBurst.WRAP:
             if length not in (1, 2, 4, 8, 16):
-                raise ValueError("Burst length for WRAP bursts must be 1, 2, "
-                                 "4, 8 or 16")
+                raise ValueError(
+                    "Burst length for WRAP bursts must be 1, 2, 4, 8 or 16"
+                )
         else:
             if length > 16:
                 raise ValueError("Maximum burst length for FIXED bursts is 16")
@@ -123,28 +170,38 @@ class AXI4Master(BusDriver):
     def _check_size(size: int, data_bus_width: int) -> None:
         """Check that the provided transfer size is valid."""
         if size > data_bus_width:
-            raise ValueError("Beat size ({} B) is larger than the bus width "
-                             "({} B)".format(size, data_bus_width))
+            raise ValueError(
+                "Beat size ({} B) is larger than the bus width ({} B)".format(
+                    size, data_bus_width
+                )
+            )
         elif size <= 0 or size & (size - 1) != 0:
             raise ValueError("Beat size must be a positive power of 2")
 
     @staticmethod
-    def _check_4kB_boundary_crossing(address: int, burst: AXIBurst, size: int,
-                                     length: int) -> None:
+    def _check_4kB_boundary_crossing(
+        address: int, burst: AXIBurst, size: int, length: int
+    ) -> None:
         """Check that the provided burst does not cross a 4kB boundary."""
         if burst is AXIBurst.INCR:
             last_address = address + size * (length - 1)
-            if address & ~0xfff != last_address & ~0xfff:
+            if address & ~0xFFF != last_address & ~0xFFF:
                 raise ValueError(
                     "INCR burst with start address {:#x} and last address "
                     "{:#x} crosses the 4kB boundary {:#x}, which is forbidden "
-                    "in a single burst"
-                    .format(address, last_address,
-                            (address & ~0xfff) + 0x1000))
+                    "in a single burst".format(
+                        address, last_address, (address & ~0xFFF) + 0x1000
+                    )
+                )
 
     async def _send_write_address(
-        self, address: int, length: int, burst: AXIBurst, size: int,
-        delay: int, sync: bool
+        self,
+        address: int,
+        length: int,
+        burst: AXIBurst,
+        size: int,
+        delay: int,
+        sync: bool,
     ) -> None:
         """Send the write address, with optional delay (in clocks)"""
         async with self.write_address_busy:
@@ -170,15 +227,21 @@ class AXI4Master(BusDriver):
             # Wait until acknowledged
             while True:
                 await ReadOnly()
-                if str(self.bus.AWREADY.value) == '1':
+                if str(self.bus.AWREADY.value) == "1":
                     break
                 await RisingEdge(self.clock)
             await RisingEdge(self.clock)
             self.bus.AWVALID.value = 0
 
     async def _send_write_data(
-        self, address, data: Sequence[int], burst: AXIBurst, size: int,
-        delay: int, byte_enable: Sequence[Optional[int]], sync: bool
+        self,
+        address,
+        data: Sequence[int],
+        burst: AXIBurst,
+        size: int,
+        delay: int,
+        byte_enable: Sequence[Optional[int]],
+        sync: bool,
     ) -> None:
         """Send the write data, with optional delay (in clocks)."""
 
@@ -187,24 +250,25 @@ class AXI4Master(BusDriver):
             return (value & (2**block_size - 1)) << (block_num * block_size)
 
         # [0x33221100, 0x77665544] --> [0x221100XX, 0x66554433]
-        def unalign_data(
-            data: Sequence[int], size_bits: int, shift: int
-        ) -> List[int]:
+        def unalign_data(data: Sequence[int], size_bits: int, shift: int) -> List[int]:
             padded_data = (0,) + tuple(value for value in data)
-            low_mask = 2**(size_bits - shift) - 1
+            low_mask = 2 ** (size_bits - shift) - 1
             high_mask = (2**shift - 1) << (size_bits - shift)
 
-            return [(padded_data[i] & high_mask) >> (size_bits - shift) |
-                    (padded_data[i + 1] & low_mask) << shift
-                    for i in range(len(data))]
+            return [
+                (padded_data[i] & high_mask) >> (size_bits - shift)
+                | (padded_data[i + 1] & low_mask) << shift
+                for i in range(len(data))
+            ]
 
         strobes = []
         byte_enable_iterator = iter(byte_enable)
         try:
             for i in range(len(data)):
                 current_byte_enable = next(byte_enable_iterator)
-                strobes.append(2**size - 1 if current_byte_enable is None
-                               else current_byte_enable)
+                strobes.append(
+                    2**size - 1 if current_byte_enable is None else current_byte_enable
+                )
         except StopIteration:
             # Fill the remaining strobes with the last one if we have reached
             # the end of the iterator
@@ -214,9 +278,8 @@ class AXI4Master(BusDriver):
         if address % size != 0:
             shift = (address % size) * 8
             if burst is AXIBurst.FIXED:
-                data = [(word << shift) & (2**(size * 8) - 1) for word in data]
-                strobes = \
-                    [(strb << shift // 8) & (2**size - 1) for strb in strobes]
+                data = [(word << shift) & (2 ** (size * 8) - 1) for word in data]
+                strobes = [(strb << shift // 8) & (2**size - 1) for strb in strobes]
             else:
                 data = unalign_data(data, size * 8, shift)
                 strobes = unalign_data(strobes, size, address % size)
@@ -246,7 +309,7 @@ class AXI4Master(BusDriver):
 
                 while True:
                     await RisingEdge(self.clock)
-                    if str(self.bus.WREADY.value) == '1':
+                    if str(self.bus.WREADY.value) == "1":
                         break
 
                 if beat_num == len(data) - 1:
@@ -254,10 +317,16 @@ class AXI4Master(BusDriver):
 
     @coroutine
     async def write(
-        self, address: int, value: Union[int, Sequence[int]], *,
-        size: Optional[int] = None, burst: AXIBurst = AXIBurst.INCR,
+        self,
+        address: int,
+        value: Union[int, Sequence[int]],
+        *,
+        size: Optional[int] = None,
+        burst: AXIBurst = AXIBurst.INCR,
         byte_enable: Union[Optional[int], Sequence[Optional[int]]] = None,
-        address_latency: int = 0, data_latency: int = 0, sync: bool = True
+        address_latency: int = 0,
+        data_latency: int = 0,
+        sync: bool = True,
     ) -> None:
         """Write a value to an address.
 
@@ -289,10 +358,10 @@ class AXI4Master(BusDriver):
         """
 
         if not isinstance(value, collections.abc.Sequence):
-            value = (value,)    # If value is not a sequence, make it
+            value = (value,)  # If value is not a sequence, make it
 
         if not isinstance(byte_enable, collections.abc.Sequence):
-            byte_enable = (byte_enable,)    # Same for byte_enable
+            byte_enable = (byte_enable,)  # Same for byte_enable
 
         if size is None:
             size = len(self.bus.WDATA) // 8
@@ -300,14 +369,15 @@ class AXI4Master(BusDriver):
             AXI4Master._check_size(size, len(self.bus.WDATA) // 8)
 
         AXI4Master._check_length(len(value), burst)
-        AXI4Master._check_4kB_boundary_crossing(address, burst, size,
-                                                len(value))
+        AXI4Master._check_4kB_boundary_crossing(address, burst, size, len(value))
 
-        write_address = self._send_write_address(address, len(value), burst,
-                                                 size, address_latency, sync)
+        write_address = self._send_write_address(
+            address, len(value), burst, size, address_latency, sync
+        )
 
-        write_data = self._send_write_data(address, value, burst, size,
-                                           data_latency, byte_enable, sync)
+        write_data = self._send_write_data(
+            address, value, burst, size, data_latency, byte_enable, sync
+        )
 
         await Combine(cocotb.start_soon(write_address), cocotb.start_soon(write_data))
 
@@ -315,7 +385,10 @@ class AXI4Master(BusDriver):
             # Wait for the response
             while True:
                 await ReadOnly()
-                if str(self.bus.BVALID.value) == '1' and str(self.bus.BREADY.value) == '1':
+                if (
+                    str(self.bus.BVALID.value) == "1"
+                    and str(self.bus.BREADY.value) == "1"
+                ):
                     result = AXIxRESP(convert_binary_to_unsigned(self.bus.BRESP.value))
                     break
                 await RisingEdge(self.clock)
@@ -329,14 +402,22 @@ class AXI4Master(BusDriver):
                 err_msg += " failed with BRESP: {3} ({4})"
 
                 raise AXIProtocolError(
-                    err_msg.format(address, len(value), burst.name,
-                                   result.value, result.name), result)
+                    err_msg.format(
+                        address, len(value), burst.name, result.value, result.name
+                    ),
+                    result,
+                )
 
     @coroutine
     async def read(
-        self, address: int, length: int = 1, *,
-        size: Optional[int] = None, burst: AXIBurst = AXIBurst.INCR,
-        return_rresp: bool = False, sync: bool = True
+        self,
+        address: int,
+        length: int = 1,
+        *,
+        size: Optional[int] = None,
+        burst: AXIBurst = AXIBurst.INCR,
+        return_rresp: bool = False,
+        sync: bool = True,
     ) -> Union[List[BinaryType], List[Tuple[BinaryType, AXIxRESP]]]:
         """Read from an address.
 
@@ -371,12 +452,15 @@ class AXI4Master(BusDriver):
         """
 
         # Helper function for narrow bursts
-        def shift_and_mask(binvalue: BinaryType, bytes_num: int,
-                           byte_shift: int) -> BinaryType:
+        def shift_and_mask(
+            binvalue: BinaryType, bytes_num: int, byte_shift: int
+        ) -> BinaryType:
             start = byte_shift * 8
             end = (bytes_num + byte_shift) * 8
 
-            return binary_slice(binvalue, len(binvalue) - end, len(binvalue) - start - 1)
+            return binary_slice(
+                binvalue, len(binvalue) - end, len(binvalue) - start - 1
+            )
 
         # [0x221100XX, 0x66554433] --> [0x33221100, 0x665544]
         def realign_data(
@@ -384,10 +468,14 @@ class AXI4Master(BusDriver):
         ) -> List[BinaryType]:
             binstr_join = "".join([str(word)[::-1] for word in data])
             binstr_join = binstr_join[shift:]
-            data_binstr = [binstr_join[i * size_bits:(i + 1) * size_bits][::-1]
-                           for i in range(len(data))]
-            return [create_binary(binstr, len(binstr), big_endian=True)
-                    for binstr in data_binstr]
+            data_binstr = [
+                binstr_join[i * size_bits : (i + 1) * size_bits][::-1]
+                for i in range(len(data))
+            ]
+            return [
+                create_binary(binstr, len(binstr), big_endian=True)
+                for binstr in data_binstr
+            ]
 
         if size is None:
             size = len(self.bus.RDATA) // 8
@@ -418,7 +506,7 @@ class AXI4Master(BusDriver):
 
             while True:
                 await ReadOnly()
-                if str(self.bus.ARREADY.value) == '1':
+                if str(self.bus.ARREADY.value) == "1":
                     break
                 await RisingEdge(self.clock)
 
@@ -432,13 +520,19 @@ class AXI4Master(BusDriver):
             for beat_num in itertools.count():
                 while True:
                     await ReadOnly()
-                    if str(self.bus.RVALID.value) == '1' and str(self.bus.RREADY.value) == '1':
+                    if (
+                        str(self.bus.RVALID.value) == "1"
+                        and str(self.bus.RREADY.value) == "1"
+                    ):
                         # Shift and mask to correctly handle narrow bursts
-                        beat_value = shift_and_mask(self.bus.RDATA.value,
-                                                    size, byte_offset)
+                        beat_value = shift_and_mask(
+                            self.bus.RDATA.value, size, byte_offset
+                        )
 
                         data.append(beat_value)
-                        rresp.append(AXIxRESP(convert_binary_to_unsigned(self.bus.RRESP.value)))
+                        rresp.append(
+                            AXIxRESP(convert_binary_to_unsigned(self.bus.RRESP.value))
+                        )
 
                         if burst is not AXIBurst.FIXED:
                             byte_offset = (byte_offset + size) % rdata_bytes
@@ -446,7 +540,7 @@ class AXI4Master(BusDriver):
                         break
                     await RisingEdge(self.clock)
 
-                if not hasattr(self.bus, "RLAST") or str(self.bus.RLAST.value) == '1':
+                if not hasattr(self.bus, "RLAST") or str(self.bus.RLAST.value) == "1":
                     break
 
                 await RisingEdge(self.clock)
@@ -456,15 +550,18 @@ class AXI4Master(BusDriver):
             if len(data) != length:
                 raise AXIReadBurstLengthMismatch(
                     "AXI4 slave returned {} data than expected (requested {} "
-                    "words, received {})"
-                    .format("more" if len(data) > length else "less",
-                            length, len(data)))
+                    "words, received {})".format(
+                        "more" if len(data) > length else "less", length, len(data)
+                    )
+                )
 
             # Re-align the words
             if address % size != 0:
                 shift = (address % size) * 8
                 if burst is AXIBurst.FIXED:
-                    data = [binary_slice(word, 0, size * 8 - shift - 1) for word in data]
+                    data = [
+                        binary_slice(word, 0, size * 8 - shift - 1) for word in data
+                    ]
                 else:
                     data = realign_data(data, size * 8, shift)
 
@@ -479,32 +576,56 @@ class AXI4Master(BusDriver):
                         err_msg += " failed with RRESP: {4} ({5})"
 
                         err_msg = err_msg.format(
-                            address, beat_number + 1, length, burst,
-                            beat_result.value, beat_result.name)
+                            address,
+                            beat_number + 1,
+                            length,
+                            burst,
+                            beat_result.value,
+                            beat_result.name,
+                        )
 
                         raise AXIProtocolError(err_msg, beat_result)
 
                 return data
 
     def __len__(self):
-        return 2**len(self.bus.ARADDR)
+        return 2 ** len(self.bus.ARADDR)
 
 
 class AXI4LiteMaster(AXI4Master):
     """AXI4-Lite Master"""
 
-    _signals = ["AWVALID", "AWADDR", "AWREADY",        # Write address channel
-                "WVALID", "WREADY", "WDATA", "WSTRB",  # Write data channel
-                "BVALID", "BREADY", "BRESP",           # Write response channel
-                "ARVALID", "ARADDR", "ARREADY",        # Read address channel
-                "RVALID", "RREADY", "RRESP", "RDATA"]  # Read data channel
+    _signals = [
+        "AWVALID",
+        "AWADDR",
+        "AWREADY",  # Write address channel
+        "WVALID",
+        "WREADY",
+        "WDATA",
+        "WSTRB",  # Write data channel
+        "BVALID",
+        "BREADY",
+        "BRESP",  # Write response channel
+        "ARVALID",
+        "ARADDR",
+        "ARREADY",  # Read address channel
+        "RVALID",
+        "RREADY",
+        "RRESP",
+        "RDATA",
+    ]  # Read data channel
 
     _optional_signals = []
 
     @coroutine
     async def write(
-        self, address: int, value: int, byte_enable: Optional[int] = None,
-        address_latency: int = 0, data_latency: int = 0, sync: bool = True
+        self,
+        address: int,
+        value: int,
+        byte_enable: Optional[int] = None,
+        address_latency: int = 0,
+        data_latency: int = 0,
+        sync: bool = True,
     ) -> BinaryType:
         """Write a value to an address.
 
@@ -531,9 +652,15 @@ class AXI4LiteMaster(AXI4Master):
             raise ValueError("AXI4-Lite does not support burst transfers")
 
         await super().write(
-            address=address, value=value, size=None, burst=AXIBurst.INCR,
-            byte_enable=byte_enable, address_latency=address_latency,
-            data_latency=data_latency, sync=sync)
+            address=address,
+            value=value,
+            size=None,
+            burst=AXIBurst.INCR,
+            byte_enable=byte_enable,
+            address_latency=address_latency,
+            data_latency=data_latency,
+            sync=sync,
+        )
 
         # Needed for backwards compatibility
         return create_binary(AXIxRESP.OKAY.value, 2, big_endian=True)
@@ -554,44 +681,84 @@ class AXI4LiteMaster(AXI4Master):
             AXIProtocolError: If read response from AXI is not ``OKAY``.
         """
 
-        ret = await super().read(address=address, length=1, size=None,
-                                 burst=AXIBurst.INCR, return_rresp=False,
-                                 sync=sync)
+        ret = await super().read(
+            address=address,
+            length=1,
+            size=None,
+            burst=AXIBurst.INCR,
+            return_rresp=False,
+            sync=sync,
+        )
         return ret[0]
 
 
 class AXI4Slave(BusDriver):
-    '''
+    """
     AXI4 Slave
 
     Monitors an internal memory and handles read and write requests.
-    '''
+    """
+
     _signals = [
-        "ARREADY", "ARVALID", "ARADDR",             # Read address channel
-        "ARLEN",   "ARSIZE",  "ARBURST", "ARPROT",
-
-        "RREADY",  "RVALID",  "RDATA",   "RLAST",   # Read response channel
-
-        "AWREADY", "AWADDR",  "AWVALID",            # Write address channel
-        "AWPROT",  "AWSIZE",  "AWBURST", "AWLEN",
-
-        "WREADY",  "WVALID",  "WDATA",
-
+        "ARREADY",
+        "ARVALID",
+        "ARADDR",  # Read address channel
+        "ARLEN",
+        "ARSIZE",
+        "ARBURST",
+        "ARPROT",
+        "RREADY",
+        "RVALID",
+        "RDATA",
+        "RLAST",  # Read response channel
+        "AWREADY",
+        "AWADDR",
+        "AWVALID",  # Write address channel
+        "AWPROT",
+        "AWSIZE",
+        "AWBURST",
+        "AWLEN",
+        "WREADY",
+        "WVALID",
+        "WDATA",
     ]
 
     # Not currently supported by this driver
     _optional_signals = [
-        "WLAST",   "WSTRB",
-        "BVALID",  "BREADY",  "BRESP",   "RRESP",
-        "RCOUNT",  "WCOUNT",  "RACOUNT", "WACOUNT",
-        "ARLOCK",  "AWLOCK",  "ARCACHE", "AWCACHE",
-        "ARQOS",   "AWQOS",   "ARID",    "AWID",
-        "BID",     "RID",     "WID"
+        "WLAST",
+        "WSTRB",
+        "BVALID",
+        "BREADY",
+        "BRESP",
+        "RRESP",
+        "RCOUNT",
+        "WCOUNT",
+        "RACOUNT",
+        "WACOUNT",
+        "ARLOCK",
+        "AWLOCK",
+        "ARCACHE",
+        "AWCACHE",
+        "ARQOS",
+        "AWQOS",
+        "ARID",
+        "AWID",
+        "BID",
+        "RID",
+        "WID",
     ]
 
-    def __init__(self, entity, name, clock, memory, callback=None, event=None,
-                 big_endian=False, **kwargs):
-
+    def __init__(
+        self,
+        entity,
+        name,
+        clock,
+        memory,
+        callback=None,
+        event=None,
+        big_endian=False,
+        **kwargs,
+    ):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         self.clock = clock
 
@@ -611,7 +778,7 @@ class AXI4Slave(BusDriver):
 
     def _size_to_bytes_in_beat(self, AxSIZE):
         if AxSIZE < 7:
-            return 2 ** AxSIZE
+            return 2**AxSIZE
         return None
 
     async def _write_data(self):
@@ -621,7 +788,7 @@ class AXI4Slave(BusDriver):
             while True:
                 self.bus.WREADY.value = 0
                 await ReadOnly()
-                if str(self.bus.AWVALID.value) == '1':
+                if str(self.bus.AWVALID.value) == "1":
                     self.bus.WREADY.value = 1
                     break
                 await clock_re
@@ -638,26 +805,27 @@ class AXI4Slave(BusDriver):
 
             if __debug__:
                 self.log.debug(
-                    "AWADDR  %d\n" % _awaddr +
-                    "AWLEN   %d\n" % _awlen +
-                    "AWSIZE  %d\n" % _awsize +
-                    "AWBURST %d\n" % _awburst +
-                    "AWPROT %d\n" % _awprot +
-                    "BURST_LENGTH %d\n" % burst_length +
-                    "Bytes in beat %d\n" % bytes_in_beat)
+                    "AWADDR  %d\n" % _awaddr
+                    + "AWLEN   %d\n" % _awlen
+                    + "AWSIZE  %d\n" % _awsize
+                    + "AWBURST %d\n" % _awburst
+                    + "AWPROT %d\n" % _awprot
+                    + "BURST_LENGTH %d\n" % burst_length
+                    + "Bytes in beat %d\n" % bytes_in_beat
+                )
 
             burst_count = burst_length
 
             await clock_re
 
             while True:
-                if str(self.bus.WVALID.value) == '1':
+                if str(self.bus.WVALID.value) == "1":
                     _burst_diff = burst_length - burst_count
                     _st = _awaddr + (_burst_diff * bytes_in_beat)  # start
                     _end = _awaddr + ((_burst_diff + 1) * bytes_in_beat)  # end
                     self._memory[_st:_end] = array.array(
-                        'B',
-                        convert_binary_to_bytes(self.bus.WDATA.value, self.big_endian)
+                        "B",
+                        convert_binary_to_bytes(self.bus.WDATA.value, self.big_endian),
                     )
                     burst_count -= 1
                     if burst_count == 0:
@@ -670,7 +838,7 @@ class AXI4Slave(BusDriver):
         while True:
             while True:
                 await ReadOnly()
-                if str(self.bus.ARVALID.value) == '1':
+                if str(self.bus.ARVALID.value) == "1":
                     break
                 await clock_re
 
@@ -686,13 +854,14 @@ class AXI4Slave(BusDriver):
 
             if __debug__:
                 self.log.debug(
-                    "ARADDR  %d\n" % _araddr +
-                    "ARLEN   %d\n" % _arlen +
-                    "ARSIZE  %d\n" % _arsize +
-                    "ARBURST %d\n" % _arburst +
-                    "ARPROT %d\n" % _arprot +
-                    "BURST_LENGTH %d\n" % burst_length +
-                    "Bytes in beat %d\n" % bytes_in_beat)
+                    "ARADDR  %d\n" % _araddr
+                    + "ARLEN   %d\n" % _arlen
+                    + "ARSIZE  %d\n" % _arsize
+                    + "ARBURST %d\n" % _arburst
+                    + "ARPROT %d\n" % _arprot
+                    + "BURST_LENGTH %d\n" % burst_length
+                    + "Bytes in beat %d\n" % bytes_in_beat
+                )
 
             burst_count = burst_length
 
@@ -701,14 +870,14 @@ class AXI4Slave(BusDriver):
             while True:
                 self.bus.RVALID.value = 1
                 await ReadOnly()
-                if str(self.bus.RREADY.value) == '1':
+                if str(self.bus.RREADY.value) == "1":
                     _burst_diff = burst_length - burst_count
                     _st = _araddr + (_burst_diff * bytes_in_beat)
                     _end = _araddr + ((_burst_diff + 1) * bytes_in_beat)
                     self.bus.RDATA.value = create_binary(
                         self._memory[_st:_end].tobytes(),
                         bytes_in_beat * 8,
-                        self.big_endian
+                        self.big_endian,
                     )
                     if burst_count == 1:
                         self.bus.RLAST.value = 1

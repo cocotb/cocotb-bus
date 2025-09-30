@@ -21,8 +21,19 @@ class OPBException(Exception):
 
 class OPBMaster(BusDriver):
     """On-chip peripheral bus master."""
-    _signals = ["xferAck", "errAck", "toutSup", "retry", "DBus_out", "select",
-                "RNW", "BE", "ABus", "DBus_in"]
+
+    _signals = [
+        "xferAck",
+        "errAck",
+        "toutSup",
+        "retry",
+        "DBus_out",
+        "select",
+        "RNW",
+        "BE",
+        "ABus",
+        "DBus_in",
+    ]
     _optional_signals = ["seqAddr"]
     _max_cycles = 16
 

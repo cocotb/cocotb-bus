@@ -36,3 +36,8 @@ build-backend = "setuptools.build_meta"
         directory = "change"
         name = "Changes"
         showcontent = true
+
+[tool.codespell]
+ignore-words-list = [
+    "Synopsys",
+]

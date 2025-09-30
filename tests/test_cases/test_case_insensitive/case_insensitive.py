@@ -10,11 +10,11 @@ from cocotb_bus.drivers import BusDriver
 from cocotb_bus.monitors import BusMonitor
 from cocotb.triggers import RisingEdge
 
-class TestTransaction:
 
+class TestTransaction:
     def __init__(self, data, tmp):
         self.data = data
-        self.tmp  = tmp
+        self.tmp = tmp
 
     def __eq__(self, o):
         if self.data != o.data:
@@ -22,9 +22,10 @@ class TestTransaction:
         if self.tmp != o.tmp:
             return False
         return True
-    
+
     def __str__(self):
         return "[data={}, tmp={}]".format(self.data, self.tmp)
+
 
 class TestDriver(BusDriver):
     # Test is using lower cases for signal ports. It should be mapped
@@ -36,8 +37,8 @@ class TestDriver(BusDriver):
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         # Setup initial values
         self.bus.valid.value = 0
-        self.bus.data.value  = 0
-        self.bus.tmp.value   = 0
+        self.bus.data.value = 0
+        self.bus.tmp.value = 0
 
     async def _driver_send(self, transaction, sync=True):
         clkedge = RisingEdge(self.clock)
@@ -46,13 +47,14 @@ class TestDriver(BusDriver):
 
         self.log.info("Sending {}".format(transaction))
         self.bus.valid.value = 1
-        self.bus.data.value  = transaction.data
-        self.bus.tmp.value   = transaction.tmp
+        self.bus.data.value = transaction.data
+        self.bus.tmp.value = transaction.tmp
 
         await clkedge
         self.bus.valid.value = 0
-        self.bus.data.value  = 0
-        self.bus.tmp.value   = 0
+        self.bus.data.value = 0
+        self.bus.tmp.value = 0
+
 
 class TestMonitor(BusMonitor):
     # Test is using lower cases for signal ports. It should be mapped
@@ -69,7 +71,7 @@ class TestMonitor(BusMonitor):
         clkedge = RisingEdge(self.clock)
         while True:
             await clkedge
-            if str(self.bus.valid.value) != '1':
+            if str(self.bus.valid.value) != "1":
                 continue
             # Receive transaction and provide to _recv method
             tr = TestTransaction(int(self.bus.data.value), int(self.bus.tmp.value))
@@ -78,20 +80,23 @@ class TestMonitor(BusMonitor):
     def _get_result(self, transaction):
         self.log.info("Received transaction: {} ".format(str(transaction)))
         exp = self.expected.pop(0)
-        assert exp == transaction, "Transaction {} and {} are not same.".format(str(exp), str(transaction))
+        assert exp == transaction, "Transaction {} and {} are not same.".format(
+            str(exp), str(transaction)
+        )
 
     def add_expected(self, transaction):
         self.expected.append(transaction)
+
 
 @cocotb.test()
 async def test_case_insensitive(dut):
     clock = Clock(dut.clk, 10, "ns")
     cocotb.start_soon(clock.start())
-    clkedge  = RisingEdge(dut.clk)
-    in_data  = TestDriver(dut, "in", dut.clk)
+    clkedge = RisingEdge(dut.clk)
+    in_data = TestDriver(dut, "in", dut.clk)
     out_data = TestMonitor(dut, "in", dut.clk)
     # Generate random amount of transactions
-    for i in range(0,20):
+    for i in range(0, 20):
         tr = TestTransaction(random.randint(0, 1), random.randint(0, 1))
         out_data.add_expected(tr)
         await in_data.send(tr)

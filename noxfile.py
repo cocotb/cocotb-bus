@@ -5,7 +5,7 @@ import nox
 @nox.parametrize("cocotb", ["1.6.0", "1.9.0", "github-de51adf"])
 def tests(session, cocotb):
     if cocotb.startswith("github-"):
-        cocotb_req = "git+https://github.com/cocotb/cocotb@" + cocotb[len("github-"):]
+        cocotb_req = "git+https://github.com/cocotb/cocotb@" + cocotb[len("github-") :]
     else:
         cocotb_req = f"cocotb=={cocotb}"
     session.install("pytest", "coverage", cocotb_req)
@@ -32,7 +32,7 @@ def docs(session: nox.Session) -> None:
 def docs_preview(session: nox.Session) -> None:
     """Build a live preview of the documentation"""
     create_env_for_docs_build(session)
-    # Editable install allows editing cocotb_bus source and seing it updated in the live preview
+    # Editable install allows editing cocotb_bus source and seeing it updated in the live preview
     session.run("pip", "install", "-e", ".")
     session.run("pip", "install", "sphinx-autobuild")
     outdir = session.cache_dir / "docs_out"

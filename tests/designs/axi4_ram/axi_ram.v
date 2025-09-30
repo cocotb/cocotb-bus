@@ -90,7 +90,7 @@ parameter WORD_SIZE = DATA_WIDTH/WORD_WIDTH;
 // bus width assertions
 initial begin
     if (WORD_SIZE * STRB_WIDTH != DATA_WIDTH) begin
-        $error("Error: AXI data width not evenly divisble (instance %m)");
+        $error("Error: AXI data width not evenly divisible (instance %m)");
         $finish;
     end
 

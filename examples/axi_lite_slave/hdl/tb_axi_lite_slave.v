@@ -86,7 +86,7 @@ axi_lite_demo #(
 
 );
 
-//asynchronus logic
+//asynchronous logic
 //synchronous logic
 
 `ifndef VERILATOR // traced differently

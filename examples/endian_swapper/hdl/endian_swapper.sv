@@ -40,7 +40,7 @@ Exposes 2 32-bit registers via the Avalon-MM interface
 
    Address 0:  bit     0  [R/W] byteswap enable
                bits 31-1: [N/A] reserved
-   Adress  1:  bits 31-0: [RO]  packet count
+   Address  1:  bits 31-0: [RO]  packet count
 
 */
 
@@ -187,4 +187,3 @@ end
 `endif
 
 endmodule
-

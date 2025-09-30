@@ -8,6 +8,7 @@
 # By default cast to scapy packets, otherwise we pass the string of bytes
 try:
     from scapy.all import Ether
+
     _have_scapy = True
 except ImportError:
     _have_scapy = False
@@ -22,11 +23,11 @@ from cocotb.triggers import RisingEdge
 from cocotb_bus.compat import convert_binary_to_unsigned
 from cocotb_bus.monitors import Monitor
 
-_XGMII_IDLE      = 0x07  # noqa
-_XGMII_START     = 0xFB  # noqa
+_XGMII_IDLE = 0x07  # noqa
+_XGMII_START = 0xFB  # noqa
 _XGMII_TERMINATE = 0xFD  # noqa
 
-_PREAMBLE_SFD = b"\x55\x55\x55\x55\x55\x55\xD5"
+_PREAMBLE_SFD = b"\x55\x55\x55\x55\x55\x55\xd5"
 
 
 class XGMII(Monitor):
@@ -41,8 +42,7 @@ class XGMII(Monitor):
         which matches the behavior of :class:`cocotb.drivers.xgmii.XGMII`.
     """
 
-    def __init__(self, signal, clock, interleaved=True, callback=None,
-                 event=None):
+    def __init__(self, signal, clock, interleaved=True, callback=None, event=None):
         """Args:
             signal (SimHandle): The XGMII data bus.
             clock (SimHandle): The associated clock (assumed to be
@@ -80,7 +80,7 @@ class XGMII(Monitor):
             ctrl_inc = 9
 
         for i in range(self.bytes):
-            bytes.append((value >> (i * byte_shift)) & 0xff)
+            bytes.append((value >> (i * byte_shift)) & 0xFF)
             ctrls.append(bool(value & (1 << ctrl_base)))
             ctrl_base += ctrl_inc
 
@@ -92,10 +92,8 @@ class XGMII(Monitor):
             if ctrl[index]:
                 if byte != _XGMII_TERMINATE:
                     self.log.error("Got control character in XGMII payload")
-                    self.log.info("data = :" +
-                                  " ".join(["%02X" % b for b in bytes]))
-                    self.log.info("ctrl = :" +
-                                  " ".join(["%s" % str(c) for c in ctrl]))
+                    self.log.info("data = :" + " ".join(["%02X" % b for b in bytes]))
+                    self.log.info("ctrl = :" + " ".join(["%s" % str(c) for c in ctrl]))
                     self._pkt = bytearray()
                 return False
 
@@ -111,16 +109,14 @@ class XGMII(Monitor):
             ctrl, bytes = self._get_bytes()
 
             if ctrl[0] and bytes[0] == _XGMII_START:
-
                 ctrl, bytes = ctrl[1:], bytes[1:]
 
                 while self._add_payload(ctrl, bytes):
                     await clk
                     ctrl, bytes = self._get_bytes()
 
-            elif self.bytes == 8 :
+            elif self.bytes == 8:
                 if ctrl[4] and bytes[4] == _XGMII_START:
-
                     ctrl, bytes = ctrl[5:], bytes[5:]
 
                     while self._add_payload(ctrl, bytes):
@@ -128,7 +124,6 @@ class XGMII(Monitor):
                         ctrl, bytes = self._get_bytes()
 
             if self._pkt:
-
                 self.log.debug("Received:\n%s" % (hexdump(self._pkt, dump=True)))
 
                 if len(self._pkt) < 64 + 7:
@@ -148,8 +143,7 @@ class XGMII(Monitor):
                     self._pkt = bytearray()
                     continue
 
-                expected_crc = struct.pack("<I",
-                                           (zlib.crc32(payload) & 0xFFFFFFFF))
+                expected_crc = struct.pack("<I", (zlib.crc32(payload) & 0xFFFFFFFF))
 
                 if crc32 != expected_crc:
                     self.log.error("Incorrect CRC on received packet")
