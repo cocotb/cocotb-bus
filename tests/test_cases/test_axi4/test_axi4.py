@@ -5,34 +5,33 @@
 
 """Test to demonstrate functionality of the AXI4 master interface"""
 
-from random import randint, randrange, getrandbits
-
-from packaging.version import parse as parse_version
 import warnings
+from random import getrandbits, randint, randrange
 
 import cocotb
 from cocotb.clock import Clock
+from cocotb.regression import TestFactory
 from cocotb.triggers import ClockCycles, Combine, RisingEdge
-from cocotb_bus.compat import TestFactory, convert_binary_to_unsigned
+from packaging.version import parse as parse_version
+
 from cocotb_bus.drivers.amba import (
-    AXIBurst,
     AXI4LiteMaster,
     AXI4Master,
+    AXIBurst,
     AXIProtocolError,
     AXIReadBurstLengthMismatch,
     AXIxRESP,
 )
-
 
 CLK_PERIOD = (10, "ns")
 AXI_PREFIX = "S_AXI"
 
 
 def get_parameters(dut):
-    address_width = convert_binary_to_unsigned(dut.ADDR_WIDTH.value) // 8
-    data_width = convert_binary_to_unsigned(dut.DATA_WIDTH.value) // 8
-    ram_start = convert_binary_to_unsigned(dut.RAM_BASE_ADDRESS.value)
-    ram_stop = ram_start + 2 ** convert_binary_to_unsigned(dut.RAM_WIDTH.value)
+    address_width = int(dut.ADDR_WIDTH.value) // 8
+    data_width = int(dut.DATA_WIDTH.value) // 8
+    ram_start = int(dut.RAM_BASE_ADDRESS.value)
+    ram_stop = ram_start + 2 ** int(dut.RAM_WIDTH.value)
     return address_width, data_width, ram_start, ram_stop
 
 
@@ -40,7 +39,7 @@ def add_wstrb_mask(data_width, previous_value, write_value, wstrb):
     result = 0
     for i in range(data_width):
         source = write_value if wstrb & (1 << i) else previous_value
-        result |= convert_binary_to_unsigned(source) & (0xFF << (i * 8))
+        result |= int(source) & (0xFF << (i * 8))
 
     return result
 
@@ -50,7 +49,7 @@ def compare_read_values(expected_values, read_values, burst, burst_length, addre
         assert expected == read, (
             "Read {:#x} at beat {}/{} of {} burst with starting address "
             "{:#x}, but was expecting {:#x})".format(
-                convert_binary_to_unsigned(read),
+                int(read),
                 i + 1,
                 burst_length,
                 burst.name,
@@ -100,7 +99,7 @@ async def test_single_beat(dut, driver, address_latency, data_latency):
         "Read {:#x} from {:#x} but was expecting {:#x} "
         "({:#x} with {:#x} as strobe and {:#x} as previous "
         "value)".format(
-            convert_binary_to_unsigned(read_value),
+            int(read_value),
             address,
             expected_value,
             write_value,
@@ -157,14 +156,14 @@ async def test_incr_burst(dut, size, return_rresp):
             "Read {:#x} at beat {}/{} with starting address {:#x}, but "
             "was expecting {:#x} ({:#x} with {:#x} as strobe and {:#x} as "
             "previous value)".format(
-                convert_binary_to_unsigned(read_values[i]),
+                int(read_values[i]),
                 i + 1,
                 burst_length,
                 address,
                 expected_values[i],
                 write_values[i],
                 strobes[i],
-                convert_binary_to_unsigned(previous_values[i]),
+                int(previous_values[i]),
             )
         )
 
@@ -479,7 +478,7 @@ async def test_simultaneous(dut, sync, num=5):
 
     for i, (written, read) in enumerate(zip(write_values, read_values)):
         assert written == read, "#{}: wrote {:#x} but read back {:#x}".format(
-            i, written, convert_binary_to_unsigned(read)
+            i, written, int(read)
         )
 
 
@@ -543,45 +542,45 @@ async def test_read_length_mismatch(dut):
             pass
 
 
-single_beat = TestFactory(test_single_beat)
-single_beat.add_option("driver", (AXI4Master, AXI4LiteMaster))
-single_beat.add_option("address_latency", (0,))
-single_beat.add_option("data_latency", (0,))
-single_beat.generate_tests()
-
-single_beat_with_latency = TestFactory(test_single_beat)
-single_beat_with_latency.add_option("driver", (AXI4Master,))
-single_beat_with_latency.add_option("address_latency", (0, 5))
-single_beat_with_latency.add_option("data_latency", (1, 10))
+# ignore DeprecationWarning from TestFactory
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
+
+    single_beat = TestFactory(test_single_beat)
+    single_beat.add_option("driver", (AXI4Master, AXI4LiteMaster))
+    single_beat.add_option("address_latency", (0,))
+    single_beat.add_option("data_latency", (0,))
+    single_beat.generate_tests()
+
+    single_beat_with_latency = TestFactory(test_single_beat)
+    single_beat_with_latency.add_option("driver", (AXI4Master,))
+    single_beat_with_latency.add_option("address_latency", (0, 5))
+    single_beat_with_latency.add_option("data_latency", (1, 10))
     single_beat_with_latency.generate_tests(postfix="_latency")
 
-incr_burst = TestFactory(test_incr_burst)
-incr_burst.add_option("return_rresp", (True, False))
-incr_burst.add_option("size", (None,))
-incr_burst.generate_tests()
+    incr_burst = TestFactory(test_incr_burst)
+    incr_burst.add_option("return_rresp", (True, False))
+    incr_burst.add_option("size", (None,))
+    incr_burst.generate_tests()
 
-incr_burst_size = TestFactory(test_incr_burst)
-incr_burst_size.add_option("return_rresp", (False,))
-incr_burst_size.add_option("size", (1, 2))
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
+    incr_burst_size = TestFactory(test_incr_burst)
+    incr_burst_size.add_option("return_rresp", (False,))
+    incr_burst_size.add_option("size", (1, 2))
     incr_burst_size.generate_tests(postfix="_size")
 
-fixed_wrap_burst = TestFactory(test_fixed_wrap_burst)
-fixed_wrap_burst.add_option("size", (None, 1, 2))
-fixed_wrap_burst.generate_tests()
+    fixed_wrap_burst = TestFactory(test_fixed_wrap_burst)
+    fixed_wrap_burst.add_option("size", (None, 1, 2))
+    fixed_wrap_burst.generate_tests()
 
-unaligned = TestFactory(test_unaligned)
-unaligned.add_option("size", (None, 2))
-unaligned.add_option("burst", (AXIBurst.FIXED, AXIBurst.INCR))
-unaligned.generate_tests()
+    unaligned = TestFactory(test_unaligned)
+    unaligned.add_option("size", (None, 2))
+    unaligned.add_option("burst", (AXIBurst.FIXED, AXIBurst.INCR))
+    unaligned.generate_tests()
 
-unmapped = TestFactory(test_unmapped)
-unmapped.add_option("driver", [AXI4Master, AXI4LiteMaster])
-unmapped.generate_tests()
+    unmapped = TestFactory(test_unmapped)
+    unmapped.add_option("driver", [AXI4Master, AXI4LiteMaster])
+    unmapped.generate_tests()
 
-simultaneous = TestFactory(test_simultaneous)
-simultaneous.add_option("sync", [True, False])
-simultaneous.generate_tests()
+    simultaneous = TestFactory(test_simultaneous)
+    simultaneous.add_option("sync", [True, False])
+    simultaneous.generate_tests()

@@ -8,11 +8,10 @@
 
 import logging
 
-from cocotb_bus.compat import test_success
+from scapy.utils import hexdiff, hexdump
 
+from cocotb_bus._compat import test_success
 from cocotb_bus.monitors import Monitor
-
-from scapy.utils import hexdump, hexdiff
 
 
 class Scoreboard:
@@ -104,7 +103,7 @@ class Scoreboard:
         """
 
         # Compare the types
-        if strict_type and type(got) != type(exp):
+        if strict_type and type(got) is not type(exp):
             self.errors += 1
             log.error("Received transaction type is different than expected")
             log.info("Received: %s but expected %s" % (str(type(got)), str(type(exp))))

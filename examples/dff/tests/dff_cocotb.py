@@ -26,15 +26,14 @@
 # ==============================================================================
 
 import random
-import warnings
 
 import cocotb
 from cocotb.clock import Clock
+from cocotb.regression import TestFactory
 from cocotb.triggers import ReadOnly, RisingEdge
 
-from cocotb_bus.compat import create_binary, TestFactory
-from cocotb_bus.monitors import Monitor
 from cocotb_bus.drivers import BitDriver
+from cocotb_bus.monitors import Monitor
 from cocotb_bus.scoreboard import Scoreboard
 
 #      dut
@@ -94,9 +93,7 @@ class DFF_TB(object):
 
         # Create a scoreboard on the outputs
         self.expected_output = [init_val]  # a list with init_val as the first element
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.scoreboard = Scoreboard(dut)
+        self.scoreboard = Scoreboard(dut)
         self.scoreboard.add_interface(self.output_mon, self.expected_output)
 
         # Use the input monitor to reconstruct the transactions from the pins
@@ -138,7 +135,7 @@ async def run_test(dut):
 
     cocotb.start_soon(Clock(dut.c, 10, "us").start(start_high=False))
 
-    tb = DFF_TB(dut, init_val=create_binary("0", 1, big_endian=True))
+    tb = DFF_TB(dut, init_val=type(dut.d.value)("0"))
 
     clkedge = RisingEdge(dut.c)
 

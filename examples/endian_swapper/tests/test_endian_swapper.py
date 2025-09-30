@@ -29,13 +29,12 @@ import itertools
 import logging
 import math
 import random
-import warnings
 
 import cocotb
 from cocotb.clock import Clock
+from cocotb.regression import TestFactory
 from cocotb.triggers import ReadOnly, RisingEdge, Timer
 
-from cocotb_bus.compat import TestFactory, convert_binary_to_unsigned
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.drivers.avalon import AvalonMaster
 from cocotb_bus.drivers.avalon import AvalonSTPkts as AvalonSTDriver
@@ -165,9 +164,7 @@ class EndianSwapperTB(object):
         # Create a scoreboard on the stream_out bus
         self.pkts_sent = 0
         self.expected_output = []
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.scoreboard = Scoreboard(dut)
+        self.scoreboard = Scoreboard(dut)
         self.scoreboard.add_interface(self.stream_out, self.expected_output)
 
         # Reconstruct the input transactions from the pins
@@ -229,13 +226,10 @@ async def run_test(
 
     pkt_count = await tb.csr.read(1)
 
-    assert convert_binary_to_unsigned(pkt_count) == tb.pkts_sent, (
-        "DUT recorded %d packets but tb counted %d"
-        % (convert_binary_to_unsigned(pkt_count), tb.pkts_sent)
+    assert int(pkt_count) == tb.pkts_sent, (
+        "DUT recorded %d packets but tb counted %d" % (int(pkt_count), tb.pkts_sent)
     )
-    dut._log.info(
-        "DUT correctly counted %d packets" % convert_binary_to_unsigned(pkt_count)
-    )
+    dut._log.info("DUT correctly counted %d packets" % int(pkt_count))
 
     raise tb.scoreboard.result
 
