@@ -14,17 +14,15 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import cocotb
 from cocotb.handle import SimHandleBase
 from cocotb.triggers import ClockCycles, Combine, Lock, ReadOnly, RisingEdge
+from cocotb.types import LogicArray, Range
 
-from cocotb_bus.drivers import BusDriver
-from cocotb_bus.compat import (
+from cocotb_bus._compat import (
     BinaryType,
     binary_slice,
-    cocotb_2x_or_newer,
-    coroutine,
     convert_binary_to_bytes,
-    convert_binary_to_unsigned,
     create_binary,
 )
+from cocotb_bus.drivers import BusDriver
 
 
 class AXIBurst(enum.IntEnum):
@@ -315,7 +313,6 @@ class AXI4Master(BusDriver):
                 if beat_num == len(data) - 1:
                     self.bus.WVALID.value = 0
 
-    @coroutine
     async def write(
         self,
         address: int,
@@ -389,7 +386,7 @@ class AXI4Master(BusDriver):
                     str(self.bus.BVALID.value) == "1"
                     and str(self.bus.BREADY.value) == "1"
                 ):
-                    result = AXIxRESP(convert_binary_to_unsigned(self.bus.BRESP.value))
+                    result = AXIxRESP(int(self.bus.BRESP.value))
                     break
                 await RisingEdge(self.clock)
 
@@ -408,7 +405,6 @@ class AXI4Master(BusDriver):
                     result,
                 )
 
-    @coroutine
     async def read(
         self,
         address: int,
@@ -530,9 +526,7 @@ class AXI4Master(BusDriver):
                         )
 
                         data.append(beat_value)
-                        rresp.append(
-                            AXIxRESP(convert_binary_to_unsigned(self.bus.RRESP.value))
-                        )
+                        rresp.append(AXIxRESP(int(self.bus.RRESP.value)))
 
                         if burst is not AXIBurst.FIXED:
                             byte_offset = (byte_offset + size) % rdata_bytes
@@ -617,7 +611,6 @@ class AXI4LiteMaster(AXI4Master):
 
     _optional_signals = []
 
-    @coroutine
     async def write(
         self,
         address: int,
@@ -665,7 +658,6 @@ class AXI4LiteMaster(AXI4Master):
         # Needed for backwards compatibility
         return create_binary(AXIxRESP.OKAY.value, 2, big_endian=True)
 
-    @coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryType:
         """Read from an address.
 

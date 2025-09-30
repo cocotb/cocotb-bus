@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: CC0-1.0
 
 import random
-import warnings
 
 import cocotb
 from cocotb.clock import Clock
@@ -91,9 +90,7 @@ async def mean_randomised_test(dut):
     dut_out = StreamBusMonitor(dut, "o", dut.clk)
 
     exp_out = []
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        scoreboard = Scoreboard(dut)
+    scoreboard = Scoreboard(dut)
     scoreboard.add_interface(dut_out, exp_out)
 
     DATA_WIDTH = int(dut.DATA_WIDTH.value)

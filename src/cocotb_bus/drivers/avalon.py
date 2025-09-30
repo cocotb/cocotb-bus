@@ -12,21 +12,18 @@ NB Currently we only support a very small subset of functionality
 """
 
 import random
-from typing import Iterable, Union, Optional
-
-from scapy.utils import hexdump
+from typing import Iterable, Optional, Union
 
 import cocotb
-from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly, NextTimeStep
+from cocotb.triggers import FallingEdge, NextTimeStep, ReadOnly, RisingEdge
+from cocotb.types import LogicArray
+from scapy.utils import hexdump
 
-from cocotb_bus.drivers import BusDriver, ValidatedBusDriver
-from cocotb_bus.compat import (
+from cocotb_bus._compat import (
     BinaryType,
     create_binary,
-    create_binary_from_other,
-    convert_binary_to_unsigned,
-    coroutine,
 )
+from cocotb_bus.drivers import BusDriver, ValidatedBusDriver
 
 
 class AvalonMM(BusDriver):
@@ -64,9 +61,7 @@ class AvalonMM(BusDriver):
 
         if hasattr(self.bus, "write"):
             self.bus.write.value = 0
-            self.bus.writedata.value = create_binary_from_other(
-                self.bus.writedata.value, "x" * len(self.bus.writedata)
-            )
+            self.bus.writedata.value = LogicArray("x" * len(self.bus.writedata))
             self._can_write = True
 
         if hasattr(self.bus, "byteenable"):
@@ -75,9 +70,7 @@ class AvalonMM(BusDriver):
         if hasattr(self.bus, "cs"):
             self.bus.cs.value = 0
 
-        self.bus.address.value = create_binary_from_other(
-            self.bus.address.value, "x" * len(self.bus.address)
-        )
+        self.bus.address.value = LogicArray("x" * len(self.bus.address))
 
     def read(self, address):
         pass
@@ -96,7 +89,6 @@ class AvalonMaster(AvalonMM):
     def __len__(self):
         return 2 ** len(self.bus.address)
 
-    @coroutine
     async def read(self, address: int, sync: bool = True) -> BinaryType:
         """Issue a request to the bus and block until this comes back.
 
@@ -141,9 +133,7 @@ class AvalonMaster(AvalonMM):
             self.bus.byteenable.value = 0
         if hasattr(self.bus, "cs"):
             self.bus.cs.value = 0
-        self.bus.address.value = create_binary_from_other(
-            self.bus.address.value, "x" * len(self.bus.address)
-        )
+        self.bus.address.value = LogicArray("x" * len(self.bus.address))
 
         if hasattr(self.bus, "readdatavalid"):
             while True:
@@ -163,7 +153,6 @@ class AvalonMaster(AvalonMM):
         self._release_lock()
         return data
 
-    @coroutine
     async def write(self, address: int, value: int) -> None:
         """Issue a write to the given address with the specified
         value.
@@ -202,12 +191,8 @@ class AvalonMaster(AvalonMM):
             self.bus.byteenable.value = 0
         if hasattr(self.bus, "cs"):
             self.bus.cs.value = 0
-        self.bus.address.value = create_binary_from_other(
-            self.bus.address.value, "x" * len(self.bus.address)
-        )
-        self.bus.writedata.value = create_binary_from_other(
-            self.bus.writedata.value, "x" * len(self.bus.writedata)
-        )
+        self.bus.address.value = LogicArray("x" * len(self.bus.address))
+        self.bus.writedata.value = LogicArray("x" * len(self.bus.writedata))
         self._release_lock()
 
 
@@ -324,9 +309,7 @@ class AvalonMemory(BusDriver):
                 val = create_binary("x" * self._width, self._width, big_endian=False)
             else:
                 val = create_binary(resp, self._width, big_endian=False)
-                self.log.debug(
-                    "sending 0x%x (%s)" % (convert_binary_to_unsigned(val), str(val))
-                )
+                self.log.debug("sending 0x%x (%s)" % (int(val), str(val)))
             self.bus.readdata.value = val
             if hasattr(self.bus, "readdatavalid"):
                 self.bus.readdatavalid.value = 1
@@ -335,7 +318,7 @@ class AvalonMemory(BusDriver):
 
     def _write_burst_addr(self):
         """Reading write burst address, burstcount, byteenable."""
-        addr = convert_binary_to_unsigned(self.bus.address.value)
+        addr = int(self.bus.address.value)
         if addr % self.dataByteSize != 0:
             self.log.error(
                 "Address must be aligned to data width"
@@ -355,7 +338,7 @@ class AvalonMemory(BusDriver):
                 + ")"
             )
 
-        burstcount = convert_binary_to_unsigned(self.bus.burstcount.value)
+        burstcount = int(self.bus.burstcount.value)
         if burstcount == 0:
             self.log.error("Write burstcount must be 1 at least")
 
@@ -365,7 +348,7 @@ class AvalonMemory(BusDriver):
         """Writing value in _mem with byteaddr size."""
         await FallingEdge(self.clock)
         for i in range(self.dataByteSize):
-            data = convert_binary_to_unsigned(self.bus.writedata.value)
+            data = int(self.bus.writedata.value)
             addrtmp = byteaddr + i
             datatmp = (data >> (i * 8)) & 0xFF
             self._mem[addrtmp] = datatmp
@@ -396,7 +379,7 @@ class AvalonMemory(BusDriver):
             if self._readable and str(self.bus.read.value) == "1":
                 if not self._burstread:
                     self._pad()
-                    addr = convert_binary_to_unsigned(self.bus.address.value)
+                    addr = int(self.bus.address.value)
                     if addr not in self._mem:
                         self.log.warning(
                             "Attempt to read from uninitialized address 0x%x", addr
@@ -410,7 +393,7 @@ class AvalonMemory(BusDriver):
                         )
                         self._responses.append(self._mem[addr])
                 else:
-                    addr = convert_binary_to_unsigned(self.bus.address.value)
+                    addr = int(self.bus.address.value)
                     if addr % self.dataByteSize != 0:
                         self.log.error(
                             "Address must be aligned to data width"
@@ -420,7 +403,7 @@ class AvalonMemory(BusDriver):
                             + str(self._width)
                         )
                     addr = int(addr / self.dataByteSize)
-                    burstcount = convert_binary_to_unsigned(self.bus.burstcount.value)
+                    burstcount = int(self.bus.burstcount.value)
                     byteenable = self.bus.byteenable.value
                     if byteenable != int("1" * len(self.bus.byteenable), 2):
                         self.log.error(
@@ -472,8 +455,8 @@ class AvalonMemory(BusDriver):
 
             if self._writeable and str(self.bus.write.value) == "1":
                 if not self._burstwrite:
-                    addr = convert_binary_to_unsigned(self.bus.address.value)
-                    data = convert_binary_to_unsigned(self.bus.writedata.value)
+                    addr = int(self.bus.address.value)
+                    data = int(self.bus.writedata.value)
                     if hasattr(self.bus, "byteenable"):
                         byteenable = int(self.bus.byteenable.value)
                         mask = 0
@@ -514,7 +497,7 @@ class AvalonMemory(BusDriver):
                         await self._writing_byte_value(addr + count * self.dataByteSize)
                         self.log.debug(
                             "writing %016X @ %08X",
-                            convert_binary_to_unsigned(self.bus.writedata.value),
+                            int(self.bus.writedata.value),
                             addr + count * self.dataByteSize,
                         )
                         await edge

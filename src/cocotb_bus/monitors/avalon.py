@@ -13,16 +13,10 @@ NB Currently we only support a very small subset of functionality.
 
 import warnings
 
+from cocotb.triggers import RisingEdge
 from scapy.utils import hexdump
 
-from cocotb.triggers import RisingEdge
-
-from cocotb_bus.compat import (
-    binary_is_resolvable,
-    convert_binary_to_bytes,
-    convert_binary_to_unsigned,
-    create_binary,
-)
+from cocotb_bus._compat import convert_binary_to_bytes, create_binary
 from cocotb_bus.monitors import BusMonitor
 
 
@@ -193,12 +187,9 @@ class AvalonSTPkts(BusMonitor):
                     )
                 else:
                     value = str(self.bus.data.value)
-                    if self.config["useEmpty"] and convert_binary_to_unsigned(
-                        self.bus.empty.value
-                    ):
+                    if self.config["useEmpty"] and int(self.bus.empty.value):
                         empty = (
-                            convert_binary_to_unsigned(self.bus.empty.value)
-                            * self.config["dataBitsPerSymbol"]
+                            int(self.bus.empty.value) * self.config["dataBitsPerSymbol"]
                         )
                         if self.config["firstSymbolInHighOrderBits"]:
                             value = value[:-empty]
@@ -210,7 +201,7 @@ class AvalonSTPkts(BusMonitor):
                         len(value),
                         big_endian=self.config["firstSymbolInHighOrderBits"],
                     )
-                    if not binary_is_resolvable(vec):
+                    if not vec.is_resolvable:
                         raise AvalonProtocolError(
                             "After empty masking value is still bad?  "
                             "Had empty {:d}, got value {:s}".format(empty, value)
@@ -222,13 +213,13 @@ class AvalonSTPkts(BusMonitor):
 
                 if hasattr(self.bus, "channel"):
                     if channel is None:
-                        channel = convert_binary_to_unsigned(self.bus.channel.value)
+                        channel = int(self.bus.channel.value)
                         if channel > self.config["maxChannel"]:
                             raise AvalonProtocolError(
                                 "Channel value (%d) is greater than maxChannel (%d)"
                                 % (channel, self.config["maxChannel"])
                             )
-                    elif convert_binary_to_unsigned(self.bus.channel.value) != channel:
+                    elif int(self.bus.channel.value) != channel:
                         raise AvalonProtocolError("Channel value changed during packet")
 
                 if str(self.bus.endofpacket.value) == "1":
