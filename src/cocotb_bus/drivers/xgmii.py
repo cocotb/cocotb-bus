@@ -8,13 +8,12 @@
 import struct
 import zlib
 
+from cocotb.handle import SimHandleBase
+from cocotb.triggers import RisingEdge
+from cocotb.types import LogicArray, Range
 from scapy.utils import hexdump
 
-from cocotb.triggers import RisingEdge
-from cocotb.handle import SimHandleBase
-
 from cocotb_bus.drivers import Driver
-from cocotb_bus.compat import create_binary
 
 _XGMII_IDLE = 0x07  # noqa
 _XGMII_START = 0xFB  # noqa

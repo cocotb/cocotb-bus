@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 import pathlib
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def get_version(version_file):
@@ -32,7 +32,6 @@ if __name__ == "__main__":
         install_requires=[
             "cocotb>=1.6.0",
             "scapy",
-            "packaging",
         ],
         python_requires=">=3.6",
     )

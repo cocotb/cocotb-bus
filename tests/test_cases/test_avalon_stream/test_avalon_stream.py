@@ -1,13 +1,13 @@
 """Test to demonstrate functionality of the avalon basic streaming interface"""
 
+import math
 import random
 import struct
-import warnings
-import math
 
 import cocotb
-from cocotb.triggers import RisingEdge
 from cocotb.clock import Clock
+from cocotb.triggers import RisingEdge
+
 from cocotb_bus.drivers import BitDriver
 from cocotb_bus.drivers.avalon import AvalonST as AvalonSTDriver
 from cocotb_bus.monitors.avalon import AvalonST as AvalonSTMonitor
@@ -58,9 +58,7 @@ class AvalonSTTB(object):
 
         self.stream_in = AvalonSTDriver(self.dut, "asi", dut.clk)
         self.stream_out = AvalonSTMonitor(self.dut, "aso", dut.clk)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self.scoreboard = Scoreboard(self.dut, fail_immediately=True)
+        self.scoreboard = Scoreboard(self.dut, fail_immediately=True)
 
         self.expected_output = []
         self.scoreboard.add_interface(self.stream_out, self.expected_output)

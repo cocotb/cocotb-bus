@@ -10,14 +10,14 @@ The monitor is responsible for watching the pins of the DUT and recreating
 the transactions.
 """
 
-from collections import deque
 import logging
+import warnings
+from collections import deque
 
 import cocotb
-from cocotb.triggers import Event, Timer, First
+from cocotb.triggers import Event, First, Timer
 
 from cocotb_bus.bus import Bus
-from cocotb_bus.compat import coroutine, convert_binary_to_unsigned, set_event
 
 
 class MonitorStatistics:
@@ -96,7 +96,6 @@ class Monitor:
         )
         self._callbacks.append(callback)
 
-    @coroutine
     async def wait_for_recv(self, timeout=None):
         """With *timeout*, :meth:`.wait` for transaction to arrive on monitor
         and return its data.
@@ -144,7 +143,9 @@ class Monitor:
             self._recvQ.append(transaction)
 
         if self._event is not None:
-            set_event(self._event, transaction)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self._event.set(transaction)
 
         # If anyone was waiting then let them know
         if self._wait_event is not None:
@@ -189,9 +190,9 @@ class BusMonitor(Monitor):
     def in_reset(self):
         """Boolean flag showing whether the bus is in reset state or not."""
         if self._reset_n is not None:
-            return not bool(convert_binary_to_unsigned(self._reset_n.value))
+            return not bool(int(self._reset_n.value))
         if self._reset is not None:
-            return bool(convert_binary_to_unsigned(self._reset.value))
+            return bool(int(self._reset.value))
         return False
 
     def __str__(self):

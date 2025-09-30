@@ -6,16 +6,15 @@
 
 """Set of common driver base classes."""
 
-from collections import deque
 import logging
-from typing import Iterable, Tuple, Any, Optional, Callable
+from collections import deque
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import cocotb
-from cocotb.triggers import Event, RisingEdge, ReadOnly, NextTimeStep, Edge
 from cocotb.handle import SimHandleBase
+from cocotb.triggers import Edge, Event, NextTimeStep, ReadOnly, RisingEdge
 
 from cocotb_bus.bus import Bus
-from cocotb_bus.compat import coroutine, convert_binary_to_unsigned
 
 
 class BitDriver:
@@ -134,7 +133,6 @@ class Driver:
         """Clear any queued transactions without sending them onto the bus."""
         self._sendQ = deque()
 
-    @coroutine
     async def send(self, transaction: Any, sync: bool = True, **kwargs: Any) -> None:
         """Blocking send call (hence must be "awaited" rather than called).
 
@@ -269,7 +267,6 @@ class BusDriver(Driver):
             await RisingEdge(self.clock)
         self.bus.value = transaction
 
-    @coroutine
     async def _wait_for_signal(self, signal):
         """This method will return when the specified signal
         has hit logic ``1``. The state will be in the
@@ -278,12 +275,11 @@ class BusDriver(Driver):
         registering more callbacks can occur.
         """
         await ReadOnly()
-        while convert_binary_to_unsigned(signal.value) != 1:
+        while int(signal.value) != 1:
             await RisingEdge(signal)
             await ReadOnly()
         await NextTimeStep()
 
-    @coroutine
     async def _wait_for_nsignal(self, signal):
         """This method will return when the specified signal
         has hit logic ``0``. The state will be in the
@@ -292,7 +288,7 @@ class BusDriver(Driver):
         registering more callbacks can occur.
         """
         await ReadOnly()
-        while convert_binary_to_unsigned(signal.value) != 0:
+        while int(signal.value) != 0:
             await Edge(signal)
             await ReadOnly()
         await NextTimeStep()
@@ -363,13 +359,12 @@ class ValidatedBusDriver(BusDriver):
         self._next_valids()
 
 
-@coroutine
 async def polled_socket_attachment(driver, sock):
     """Non-blocking socket attachment that queues any payload received from the
     socket to be queued for sending into the driver.
     """
-    import socket
     import errno
+    import socket
 
     sock.setblocking(False)
     driver.log.info("Listening for data from %s" % repr(sock))
