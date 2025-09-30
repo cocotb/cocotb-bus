@@ -29,4 +29,3 @@ module array_buses
    assign out_valid[0] = tmp_valid[0];
    assign out_valid[1] = tmp_valid[1];
 endmodule
-

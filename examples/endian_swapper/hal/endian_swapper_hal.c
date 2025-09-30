@@ -63,4 +63,3 @@ int endian_swapper_get_count(endian_swapper_state_t *state)
 {
     return IORD_ENDIAN_SWAPPER_PACKET_COUNT_REG(state->base);
 }
-

@@ -16,14 +16,14 @@ from cocotb.handle import SimHandleBase
 from cocotb_bus.drivers import Driver
 from cocotb_bus.compat import create_binary
 
-_XGMII_IDLE      = 0x07  # noqa
-_XGMII_START     = 0xFB  # noqa
+_XGMII_IDLE = 0x07  # noqa
+_XGMII_START = 0xFB  # noqa
 _XGMII_TERMINATE = 0xFD  # noqa
 
 # Preamble is technically supposed to be 7 bytes of 0x55 but it seems that it's
 # permissible for the start byte to replace one of the preamble bytes
 # see http://grouper.ieee.org/groups/802/3/10G_study/email/msg04647.html
-_PREAMBLE_SFD = b"\x55\x55\x55\x55\x55\x55\xD5"
+_PREAMBLE_SFD = b"\x55\x55\x55\x55\x55\x55\xd5"
 
 
 class _XGMIIBus:
@@ -41,17 +41,17 @@ class _XGMIIBus:
 
     def __init__(self, nbytes: int, interleaved: bool = True):
         """Args:
-            nbytes: The number of bytes transferred per clock cycle
-                (usually 8 for SDR, 4 for DDR).
+        nbytes: The number of bytes transferred per clock cycle
+            (usually 8 for SDR, 4 for DDR).
 
-            interleaved: The arrangement of control bits on the bus.
+        interleaved: The arrangement of control bits on the bus.
 
-                If interleaved we have a bus with 9-bits per
-                byte, the control bit being the 9th bit of each
-                byte.
+            If interleaved we have a bus with 9-bits per
+            byte, the control bit being the 9th bit of each
+            byte.
 
-                If not interleaved then we have a byte per data
-                byte plus a control bit per byte in the MSBs.
+            If not interleaved then we have a byte per data
+            byte plus a control bit per byte in the MSBs.
         """
 
         self._integer = 0
@@ -65,15 +65,16 @@ class _XGMIIBus:
             byte = ord(byte)
 
         if index >= self._nbytes:
-            raise IndexError("Attempt to access byte %d of a %d byte bus" % (
-                index, self._nbytes))
+            raise IndexError(
+                "Attempt to access byte %d of a %d byte bus" % (index, self._nbytes)
+            )
 
         if self._interleaved:
-            self._integer |= (byte << (index * 9))
-            self._integer |= (int(ctrl) << (9*index + 8))
+            self._integer |= byte << (index * 9)
+            self._integer |= int(ctrl) << (9 * index + 8)
         else:
-            self._integer |= (byte << (index * 8))
-            self._integer |= (int(ctrl) << (self._nbytes*8 + index))
+            self._integer |= byte << (index * 8)
+            self._integer |= int(ctrl) << (self._nbytes * 8 + index)
 
     @property
     def value(self):
@@ -93,7 +94,9 @@ class _XGMIIBus:
 class XGMII(Driver):
     """XGMII (10 Gigabit Media Independent Interface) driver."""
 
-    def __init__(self, signal: SimHandleBase, clock: SimHandleBase, interleaved: bool = True):
+    def __init__(
+        self, signal: SimHandleBase, clock: SimHandleBase, interleaved: bool = True
+    ):
         """Args:
             signal: The XGMII data bus.
             clock: The associated clock (assumed to be
@@ -110,7 +113,7 @@ class XGMII(Driver):
         self.log = signal._log
         self.signal = signal
         self.clock = clock
-        self.bus = _XGMIIBus(len(signal)//9, interleaved=interleaved)
+        self.bus = _XGMIIBus(len(signal) // 9, interleaved=interleaved)
         Driver.__init__(self)
         self.idle()
 
@@ -129,8 +132,9 @@ class XGMII(Driver):
         if len(packet) < 60:
             padding = b"\x00" * (60 - len(packet))
             packet += padding
-        return (_PREAMBLE_SFD + packet +
-                struct.pack("<I", zlib.crc32(packet) & 0xFFFFFFFF))
+        return (
+            _PREAMBLE_SFD + packet + struct.pack("<I", zlib.crc32(packet) & 0xFFFFFFFF)
+        )
 
     def idle(self):
         """Helper function to set bus to IDLE state."""
@@ -147,7 +151,6 @@ class XGMII(Driver):
         self.bus[index] = (_XGMII_TERMINATE, True)
 
         if index < len(self.bus) - 1:
-
             for rem in range(index + 1, len(self.bus)):
                 self.bus[rem] = (_XGMII_IDLE, True)
 
@@ -169,16 +172,15 @@ class XGMII(Driver):
         self.bus[0] = (_XGMII_START, True)
 
         for i in range(1, len(self.bus)):
-            self.bus[i] = (pkt[i-1], False)
+            self.bus[i] = (pkt[i - 1], False)
 
-        pkt = pkt[len(self.bus)-1:]
+        pkt = pkt[len(self.bus) - 1 :]
         self.signal.value = self.bus.value
         await clkedge
 
         done = False
 
         while pkt:
-
             for i in range(len(self.bus)):
                 if i == len(pkt):
                     self.terminate(i)
@@ -189,7 +191,7 @@ class XGMII(Driver):
 
             self.signal.value = self.bus.value
             await clkedge
-            pkt = pkt[len(self.bus):]
+            pkt = pkt[len(self.bus) :]
 
         if not done:
             self.terminate(0)

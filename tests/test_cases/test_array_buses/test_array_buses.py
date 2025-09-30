@@ -26,7 +26,6 @@ class TestDriver(BusDriver):
 
 
 class TestMonitor(BusMonitor):
-
     _signals = ["data", "valid"]
 
     def __init__(self, entity, name, clock, bank=0, **kwargs):
@@ -39,7 +38,7 @@ class TestMonitor(BusMonitor):
         clkedge = RisingEdge(self.clock)
         while True:
             await clkedge
-            if str(self.bus.valid.value) == '1':
+            if str(self.bus.valid.value) == "1":
                 self._recv(int(self.bus.data.value))
 
     def _get_result(self, transaction):
@@ -51,7 +50,9 @@ class TestMonitor(BusMonitor):
         self.expected.append(int(transaction))
 
 
-@cocotb.test(expect_error=AttributeError if cocotb.SIM_NAME.lower().startswith('ghdl') else ())
+@cocotb.test(
+    expect_error=AttributeError if cocotb.SIM_NAME.lower().startswith("ghdl") else ()
+)
 async def test_array_buses(dut):
     clock = Clock(dut.clk, 10, "ns")
     cocotb.start_soon(clock.start())

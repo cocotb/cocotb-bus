@@ -164,11 +164,11 @@ always @ (posedge clk) begin
       //From master
       case (w_reg_address)
         ADDR_0: begin
-          //$display("Incomming data on address: 0x%h: 0x%h", w_reg_address, w_reg_in_data);
+          //$display("Incoming data on address: 0x%h: 0x%h", w_reg_address, w_reg_in_data);
           r_temp_0                        <=  w_reg_in_data;
         end
         ADDR_1: begin
-          //$display("Incomming data on address: 0x%h: 0x%h", w_reg_address, w_reg_in_data);
+          //$display("Incoming data on address: 0x%h: 0x%h", w_reg_address, w_reg_in_data);
           r_temp_1                        <=  w_reg_in_data;
         end
         default: begin

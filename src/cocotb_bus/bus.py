@@ -8,6 +8,7 @@
 A bus is simply defined as a collection of signals.
 """
 
+
 def _build_sig_attr_dict(signals):
     if isinstance(signals, dict):
         return signals
@@ -28,7 +29,16 @@ class Bus:
         Support for ``struct``/``record`` ports where signals are member names.
     """
 
-    def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None):
+    def __init__(
+        self,
+        entity,
+        name,
+        signals,
+        optional_signals=[],
+        bus_separator="_",
+        case_insensitive=True,
+        array_idx=None,
+    ):
         """
         Args:
             entity (SimHandle): :class:`SimHandle` instance to the entity containing the bus.
@@ -71,8 +81,9 @@ class Bus:
             if self._caseInsensGetattr(entity, signame) is not None:
                 self._add_signal(attr_name, signame, array_idx, case_insensitive)
             else:
-                self._entity._log.debug("Ignoring optional missing signal "
-                                        "%s on bus %s" % (sig_name, name))
+                self._entity._log.debug(
+                    "Ignoring optional missing signal %s on bus %s" % (sig_name, name)
+                )
 
     def _caseInsensGetattr(self, obj, attr):
         for a in dir(obj):
@@ -104,11 +115,15 @@ class Bus:
         for attr_name, hdl in self._signals.items():
             if not hasattr(obj, attr_name):
                 if strict:
-                    msg = ("Unable to drive onto {0}.{1} because {2} is missing "
-                           "attribute {3}".format(self._entity._name,
-                                                  self._name,
-                                                  type(obj).__qualname__,
-                                                  attr_name))
+                    msg = (
+                        "Unable to drive onto {0}.{1} because {2} is missing "
+                        "attribute {3}".format(
+                            self._entity._name,
+                            self._name,
+                            type(obj).__qualname__,
+                            attr_name,
+                        )
+                    )
                     raise AttributeError(msg)
                 else:
                     continue
@@ -125,18 +140,19 @@ class Bus:
             RuntimeError: If signal not present in bus,
                 or attempt to modify a bus capture.
         """
+
         class _Capture(dict):
             def __getattr__(self, name):
                 if name in self:
                     return self[name]
                 else:
-                    raise RuntimeError('Signal {} not present in bus'.format(name))
+                    raise RuntimeError("Signal {} not present in bus".format(name))
 
             def __setattr__(self, name, value):
-                raise RuntimeError('Modifying a bus capture is not supported')
+                raise RuntimeError("Modifying a bus capture is not supported")
 
             def __delattr__(self, name):
-                raise RuntimeError('Modifying a bus capture is not supported')
+                raise RuntimeError("Modifying a bus capture is not supported")
 
         _capture = _Capture()
         for attr_name, hdl in self._signals.items():
@@ -158,11 +174,15 @@ class Bus:
         for attr_name, hdl in self._signals.items():
             if not hasattr(obj, attr_name):
                 if strict:
-                    msg = ("Unable to sample from {0}.{1} because {2} is missing "
-                           "attribute {3}".format(self._entity._name,
-                                                  self._name,
-                                                  type(obj).__qualname__,
-                                                  attr_name))
+                    msg = (
+                        "Unable to sample from {0}.{1} because {2} is missing "
+                        "attribute {3}".format(
+                            self._entity._name,
+                            self._name,
+                            type(obj).__qualname__,
+                            attr_name,
+                        )
+                    )
                     raise AttributeError(msg)
                 else:
                     continue

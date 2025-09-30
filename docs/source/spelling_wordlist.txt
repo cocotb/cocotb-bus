@@ -57,7 +57,6 @@ endianness
 filename
 gotchas
 hexdump
-implementors
 incrementing
 indexable
 installable

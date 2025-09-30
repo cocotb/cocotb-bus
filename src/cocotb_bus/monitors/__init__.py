@@ -52,7 +52,9 @@ class Monitor:
     def __init__(self, callback=None, event=None):
         self._event = event
         if self._event is not None:
-            self._event.data = None  # FIXME: This attribute should be removed on next API break
+            self._event.data = (
+                None  # FIXME: This attribute should be removed on next API break
+            )
         self._wait_event = Event()
         self._wait_event_data = None
         self._recvQ = deque()
@@ -61,7 +63,9 @@ class Monitor:
 
         # Sub-classes may already set up logging
         if not hasattr(self, "log"):
-            self.log = logging.getLogger("cocotb.monitor.%s" % (type(self).__qualname__))
+            self.log = logging.getLogger(
+                "cocotb.monitor.%s" % (type(self).__qualname__)
+            )
 
         if callback is not None:
             self.add_callback(callback)
@@ -87,8 +91,9 @@ class Monitor:
         Args:
             callback (callable): The function to call back.
         """
-        self.log.debug("Adding callback of function %s to monitor",
-                       callback.__qualname__)
+        self.log.debug(
+            "Adding callback of function %s to monitor", callback.__qualname__
+        )
         self._callbacks.append(callback)
 
     @coroutine
@@ -120,8 +125,10 @@ class Monitor:
         Sub-classes should override this method to implement the actual receive
         routine and call :meth:`_recv` with the recovered transaction.
         """
-        raise NotImplementedError("Attempt to use base monitor class without "
-                                  "providing a ``_monitor_recv`` method")
+        raise NotImplementedError(
+            "Attempt to use base monitor class without "
+            "providing a ``_monitor_recv`` method"
+        )
 
     def _recv(self, transaction):
         """Common handling of a received transaction."""
@@ -148,17 +155,32 @@ class Monitor:
 
 class BusMonitor(Monitor):
     """Wrapper providing common functionality for monitoring buses."""
+
     _signals = []
     _optional_signals = []
 
-    def __init__(self, entity, name, clock, reset=None, reset_n=None,
-                 callback=None, event=None, **kwargs):
+    def __init__(
+        self,
+        entity,
+        name,
+        clock,
+        reset=None,
+        reset_n=None,
+        callback=None,
+        event=None,
+        **kwargs,
+    ):
         self.log = logging.getLogger("cocotb.%s.%s" % (entity._name, name))
         self.entity = entity
         self.name = name
         self.clock = clock
-        self.bus = Bus(self.entity, self.name, self._signals,
-                       optional_signals=self._optional_signals, **kwargs)
+        self.bus = Bus(
+            self.entity,
+            self.name,
+            self._signals,
+            optional_signals=self._optional_signals,
+            **kwargs,
+        )
         self._reset = reset
         self._reset_n = reset_n
         Monitor.__init__(self, callback=callback, event=event)

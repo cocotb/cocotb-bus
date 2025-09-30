@@ -14,6 +14,7 @@ from cocotb_bus.monitors import Monitor
 
 from scapy.utils import hexdump, hexdiff
 
+
 class Scoreboard:
     """Generic scoreboarding class.
 
@@ -36,7 +37,9 @@ class Scoreboard:
             recording an error. Default is ``True``.
     """
 
-    def __init__(self, dut, reorder_depth=0, fail_immediately=True):  # FIXME: reorder_depth needed here?
+    def __init__(
+        self, dut, reorder_depth=0, fail_immediately=True
+    ):  # FIXME: reorder_depth needed here?
         self.dut = dut
         self.log = logging.getLogger("cocotb.scoreboard.%s" % self.dut._name)
         self.errors = 0
@@ -54,19 +57,27 @@ class Scoreboard:
         fail = False
         for monitor, expected_output in self.expected.items():
             if callable(expected_output):
-                self.log.debug("Can't check all data returned for %s since "
-                               "expected output is callable function rather "
-                               "than a list" % str(monitor))
+                self.log.debug(
+                    "Can't check all data returned for %s since "
+                    "expected output is callable function rather "
+                    "than a list" % str(monitor)
+                )
                 continue
             if len(expected_output):
-                self.log.warning("Still expecting %d transactions on %s" %
-                                 (len(expected_output), str(monitor)))
+                self.log.warning(
+                    "Still expecting %d transactions on %s"
+                    % (len(expected_output), str(monitor))
+                )
                 for index, transaction in enumerate(expected_output):
-                    self.log.info("Expecting %d:\n%s" %
-                                  (index, hexdump(str(transaction), dump=True)))
+                    self.log.info(
+                        "Expecting %d:\n%s"
+                        % (index, hexdump(str(transaction), dump=True))
+                    )
                     if index > 5:
-                        self.log.info("... and %d more to come" %
-                                      (len(expected_output) - index - 1))
+                        self.log.info(
+                            "... and %d more to come"
+                            % (len(expected_output) - index - 1)
+                        )
                         break
                 fail = True
         assert not fail, "Not all expected output was received"
@@ -96,8 +107,7 @@ class Scoreboard:
         if strict_type and type(got) != type(exp):
             self.errors += 1
             log.error("Received transaction type is different than expected")
-            log.info("Received: %s but expected %s" %
-                     (str(type(got)), str(type(exp))))
+            log.info("Received: %s but expected %s" % (str(type(got)), str(type(exp))))
             if self._imm:
                 assert False, (
                     "Received transaction of wrong type. "
@@ -140,22 +150,24 @@ class Scoreboard:
             # NOTE: scapy.utils.hexdiff doesn't return a string but prints!
             hexdiff(strexp, strgot)
             if self._imm:
-                assert False, (
-                    "Received transaction differed from expected "
-                    "transaction"
-                )
+                assert False, "Received transaction differed from expected transaction"
         else:
             # Don't want to fail the test
             # if we're passed something without __len__
             try:
-                log.debug("Received expected transaction %d bytes" %
-                          (len(got)))
+                log.debug("Received expected transaction %d bytes" % (len(got)))
                 log.debug(repr(got))
             except Exception:
                 pass
 
-    def add_interface(self, monitor, expected_output, compare_fn=None,
-                      reorder_depth=0, strict_type=True):
+    def add_interface(
+        self,
+        monitor,
+        expected_output,
+        compare_fn=None,
+        reorder_depth=0,
+        strict_type=True,
+    ):
         """Add an interface to be scoreboarded.
 
         Provides a function which the monitor will callback with received
@@ -184,15 +196,19 @@ class Scoreboard:
 
         # Enforce some type checking as we only work with a real monitor
         if not isinstance(monitor, Monitor):
-            raise TypeError("Expected monitor on the interface but got %s" %
-                            (type(monitor).__qualname__))
+            raise TypeError(
+                "Expected monitor on the interface but got %s"
+                % (type(monitor).__qualname__)
+            )
 
         if compare_fn is not None:
             if callable(compare_fn):
                 monitor.add_callback(compare_fn)
                 return
-            raise TypeError("Expected a callable compare function but got %s" %
-                            str(type(compare_fn)))
+            raise TypeError(
+                "Expected a callable compare function but got %s"
+                % str(type(compare_fn))
+            )
 
         self.log.info("Created with reorder_depth %d" % reorder_depth)
 
@@ -201,9 +217,9 @@ class Scoreboard:
             received."""
 
             if monitor.name:
-                log_name = self.log.name + '.' + monitor.name
+                log_name = self.log.name + "." + monitor.name
             else:
-                log_name = self.log.name + '.' + type(monitor).__qualname__
+                log_name = self.log.name + "." + type(monitor).__qualname__
 
             log = logging.getLogger(log_name)
 
@@ -219,14 +235,10 @@ class Scoreboard:
                 exp = expected_output.pop(i)
             else:
                 self.errors += 1
-                log.error("Received a transaction but wasn't expecting "
-                          "anything")
+                log.error("Received a transaction but wasn't expecting anything")
                 log.info("Got: %s" % (hexdump(str(transaction), dump=True)))
                 if self._imm:
-                    assert False, (
-                        "Received a transaction but wasn't "
-                        "expecting anything"
-                    )
+                    assert False, "Received a transaction but wasn't expecting anything"
                 return
 
             self.compare(transaction, exp, log, strict_type=strict_type)

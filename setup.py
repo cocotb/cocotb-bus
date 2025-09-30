@@ -34,5 +34,5 @@ if __name__ == "__main__":
             "scapy",
             "packaging",
         ],
-        python_requires='>=3.6'
+        python_requires=">=3.6",
     )

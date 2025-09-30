@@ -1,7 +1,9 @@
 import os
+
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer
+
 from cocotb_bus.drivers.amba import AXI4LiteMaster, AXIProtocolError
 
 CLK_PERIOD_NS = 10
@@ -11,7 +13,7 @@ MODULE_PATH = os.path.abspath(MODULE_PATH)
 
 
 def setup_dut(dut):
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, 'ns').start())
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
 
 
 # Write to address 0 and verify that value got through
@@ -31,19 +33,21 @@ async def write_address_0(dut):
     dut.test_id.value = 0
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
     dut.rst.value = 0
 
     ADDRESS = 0x00
     DATA = 0xAB
 
     await axim.write(ADDRESS, DATA)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
 
     value = dut.dut.r_temp_0.value
 
-    assert value == DATA, ("Register at address 0x%08X should have been "
-                           "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value)))
+    assert value == DATA, (
+        "Register at address 0x%08X should have been "
+        "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value))
+    )
     dut._log.info("Write 0x%08X to address 0x%08X" % (int(value), ADDRESS))
 
 
@@ -64,20 +68,22 @@ async def read_address_4(dut):
     dut.test_id.value = 1
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
     dut.rst.value = 0
-    await Timer(CLK_PERIOD_NS, units='ns')
+    await Timer(CLK_PERIOD_NS, units="ns")
     ADDRESS = 0x04
     DATA = 0xCD
 
     dut.dut.r_temp_1.value = DATA
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
 
     value = await axim.read(ADDRESS)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
 
-    assert value == DATA, ("Register at address 0x%08X should have been "
-                           "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value)))
+    assert value == DATA, (
+        "Register at address 0x%08X should have been "
+        "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value))
+    )
     dut._log.info("Read: 0x%08X From Address: 0x%08X" % (int(value), ADDRESS))
 
 
@@ -97,7 +103,7 @@ async def write_and_read(dut):
     dut.test_id.value = 2
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
     dut.rst.value = 0
 
     ADDRESS = 0x00
@@ -105,15 +111,17 @@ async def write_and_read(dut):
 
     # Write to the register
     await axim.write(ADDRESS, DATA)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
 
     # Read back the value
     value = await axim.read(ADDRESS)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
 
     value = dut.dut.r_temp_0.value
-    assert value == DATA, ("Register at address 0x%08X should have been "
-                           "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value)))
+    assert value == DATA, (
+        "Register at address 0x%08X should have been "
+        "0x%08X but was 0x%08X" % (ADDRESS, DATA, int(value))
+    )
     dut._log.info("Write 0x%08X to address 0x%08X" % (int(value), ADDRESS))
 
 
@@ -132,7 +140,7 @@ async def write_fail(dut):
     dut.test_id.value = 3
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
     dut.rst.value = 0
 
     ADDRESS = 0x08
@@ -140,12 +148,14 @@ async def write_fail(dut):
 
     try:
         await axim.write(ADDRESS, DATA)
-        await Timer(CLK_PERIOD_NS * 10, units='ns')
+        await Timer(CLK_PERIOD_NS * 10, units="ns")
     except AXIProtocolError as e:
         print("Exception: %s" % str(e))
         dut._log.info("Bus successfully raised an error")
     else:
-        assert False, "AXI bus should have raised an error when writing to an invalid address"
+        assert False, (
+            "AXI bus should have raised an error when writing to an invalid address"
+        )
 
 
 @cocotb.test()
@@ -163,7 +173,7 @@ async def read_fail(dut):
     dut.test_id.value = 4
     axim = AXI4LiteMaster(dut, "AXIML", dut.clk)
     setup_dut(dut)
-    await Timer(CLK_PERIOD_NS * 10, units='ns')
+    await Timer(CLK_PERIOD_NS * 10, units="ns")
     dut.rst.value = 0
 
     ADDRESS = 0x08
@@ -171,9 +181,11 @@ async def read_fail(dut):
 
     try:
         await axim.read(ADDRESS, DATA)
-        await Timer(CLK_PERIOD_NS * 10, units='ns')
+        await Timer(CLK_PERIOD_NS * 10, units="ns")
     except AXIProtocolError as e:
         print("Exception: %s" % str(e))
         dut._log.info("Bus Successfully Raised an Error")
     else:
-        assert False, "AXI bus should have raised an error when reading from an invalid address"
+        assert False, (
+            "AXI bus should have raised an error when reading from an invalid address"
+        )

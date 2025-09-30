@@ -1,15 +1,15 @@
 # This file is public domain, it can be freely copied without restrictions.
 # SPDX-License-Identifier: CC0-1.0
 
-import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, ReadOnly
-
-from cocotb_bus.scoreboard import Scoreboard
-from cocotb_bus.monitors import BusMonitor
-
 import random
 import warnings
+
+import cocotb
+from cocotb.clock import Clock
+from cocotb.triggers import ReadOnly, RisingEdge
+
+from cocotb_bus.monitors import BusMonitor
+from cocotb_bus.scoreboard import Scoreboard
 
 CLK_PERIOD_NS = 100
 
@@ -25,7 +25,7 @@ class StreamBusMonitor(BusMonitor):
         while True:
             await RisingEdge(self.clock)
             await ReadOnly()
-            if str(self.bus.valid.value) == '1':
+            if str(self.bus.valid.value) == "1":
                 self._recv(int(self.bus.data.value))
 
 
@@ -33,10 +33,9 @@ async def value_test(dut, nums):
     """Test sum(nums)/n"""
     DATA_WIDTH = int(dut.DATA_WIDTH.value)
     BUS_WIDTH = int(dut.BUS_WIDTH.value)
-    dut._log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
-                  (DATA_WIDTH, BUS_WIDTH))
+    dut._log.info("Detected DATA_WIDTH = %d, BUS_WIDTH = %d" % (DATA_WIDTH, BUS_WIDTH))
 
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, 'ns').start())
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
 
     dut.rst.value = 1
     for i in range(BUS_WIDTH):
@@ -99,10 +98,9 @@ async def mean_randomised_test(dut):
 
     DATA_WIDTH = int(dut.DATA_WIDTH.value)
     BUS_WIDTH = int(dut.BUS_WIDTH.value)
-    dut._log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
-                  (DATA_WIDTH, BUS_WIDTH))
+    dut._log.info("Detected DATA_WIDTH = %d, BUS_WIDTH = %d" % (DATA_WIDTH, BUS_WIDTH))
 
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, 'ns').start())
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
 
     dut.rst.value = 1
     for i in range(BUS_WIDTH):

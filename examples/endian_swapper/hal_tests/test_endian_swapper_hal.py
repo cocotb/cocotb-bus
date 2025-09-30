@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2013 Potential Ventures Ltd
 All rights reserved.
 
@@ -22,26 +22,26 @@ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. '''
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."""
 
 import logging
 
 import cocotb
-from cocotb.triggers import RisingEdge, Timer, ReadOnly
-from cocotb.clock import Clock
-from cocotb_bus.drivers.avalon import AvalonMaster
-
 import hal
 import io_module
+from cocotb.clock import Clock
+from cocotb.triggers import ReadOnly, RisingEdge, Timer
+
+from cocotb_bus.drivers.avalon import AvalonMaster
 
 
 async def reset(dut, duration=10):
     dut._log.debug("Resetting DUT")
-    dut.reset_n <= 0
-    dut.stream_in_valid <= 0
-    await Timer(duration, units='ns')
+    dut.reset_n.value = 0
+    dut.stream_in_valid.value = 0
+    await Timer(duration, "ns")
     await RisingEdge(dut.clk)
-    dut.reset_n <= 1
+    dut.reset_n.value = 1
     dut._log.debug("Out of reset")
 
 
@@ -49,7 +49,7 @@ async def reset(dut, duration=10):
 async def initial_hal_test(dut, debug=True):
     """Example of using the software HAL against cosim testbench"""
 
-    cocotb.start_soon(Clock(dut.clk, 5, 'ns').start())
+    cocotb.start_soon(Clock(dut.clk, 5, "ns").start())
     await reset(dut)
 
     # Create the avalon master and direct our HAL calls to that
@@ -78,7 +78,7 @@ async def initial_hal_test(dut, debug=True):
     state = hal.endian_swapper_init(0)
 
     # Check the actual value
-    assert str(dut.byteswapping.value) != '1', (
+    assert str(dut.byteswapping.value) != "1", (
         "Byteswapping is enabled but haven't configured DUT"
     )
 
@@ -86,7 +86,7 @@ async def initial_hal_test(dut, debug=True):
 
     await ReadOnly()
 
-    assert str(dut.byteswapping.value) == '1', (
+    assert str(dut.byteswapping.value) == "1", (
         "Byteswapping wasn't enabled after calling endian_swapper_enable"
     )
 

@@ -45,8 +45,7 @@ def wave(on_ampl=30, on_freq=200, off_ampl=10, off_freq=100):
     TODO:
         Adjust args so we just specify a repeat duration and overall throughput
     """
-    return bit_toggler(sine_wave(on_ampl, on_freq),
-                       sine_wave(off_ampl, off_freq))
+    return bit_toggler(sine_wave(on_ampl, on_freq), sine_wave(off_ampl, off_freq))
 
 
 class AvalonSTTB(object):
@@ -77,7 +76,7 @@ class AvalonSTTB(object):
         await self.clkedge
 
     async def send_data(self, data):
-        exp_data = struct.pack("B",data)
+        exp_data = struct.pack("B", data)
         self.expected_output.append(exp_data)
         await self.stream_in.send(data)
 
@@ -91,7 +90,7 @@ async def test_avalon_stream(dut):
     tb.backpressure.start(wave())
 
     for _ in range(20):
-        data = random.randint(0, (2**7)-1)
+        data = random.randint(0, (2**7) - 1)
         await tb.send_data(data)
         await tb.clkedge
 

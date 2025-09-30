@@ -11,8 +11,7 @@ import logging
 from typing import Iterable, Tuple, Any, Optional, Callable
 
 import cocotb
-from cocotb.triggers import (Event, RisingEdge, ReadOnly, NextTimeStep,
-                             Edge)
+from cocotb.triggers import Event, RisingEdge, ReadOnly, NextTimeStep, Edge
 from cocotb.handle import SimHandleBase
 
 from cocotb_bus.bus import Bus
@@ -108,8 +107,11 @@ class Driver:
             self._thread = None
 
     def append(
-        self, transaction: Any, callback: Callable[[Any], Any] = None,
-        event: Event = None, **kwargs: Any
+        self,
+        transaction: Any,
+        callback: Callable[[Any], Any] = None,
+        event: Event = None,
+        **kwargs: Any,
     ) -> None:
         """Queue up a transaction to be sent over the bus.
 
@@ -146,7 +148,9 @@ class Driver:
         """
         await self._send(transaction, None, None, sync=sync, **kwargs)
 
-    async def _driver_send(self, transaction: Any, sync: bool = True, **kwargs: Any) -> None:
+    async def _driver_send(
+        self, transaction: Any, sync: bool = True, **kwargs: Any
+    ) -> None:
         """Actual implementation of the send.
 
         Sub-classes should override this method to implement the actual
@@ -157,12 +161,17 @@ class Driver:
             sync: Synchronize the transfer by waiting for a rising edge.
             **kwargs: Additional arguments if required for protocol implemented in a sub-class.
         """
-        raise NotImplementedError("Sub-classes of Driver should define a "
-                                  "_driver_send coroutine")
+        raise NotImplementedError(
+            "Sub-classes of Driver should define a _driver_send coroutine"
+        )
 
     async def _send(
-        self, transaction: Any, callback: Callable[[Any], Any], event: Event,
-        sync: bool = True, **kwargs
+        self,
+        transaction: Any,
+        callback: Callable[[Any], Any],
+        event: Event,
+        sync: bool = True,
+        **kwargs,
     ) -> None:
         """Send coroutine.
 
@@ -185,7 +194,6 @@ class Driver:
 
     async def _send_thread(self):
         while True:
-
             # Sleep until we have something to send
             while not self._sendQ:
                 self._pending.clear()
@@ -198,8 +206,9 @@ class Driver:
             while self._sendQ:
                 transaction, callback, event, kwargs = self._sendQ.popleft()
                 self.log.debug("Sending queued packet...")
-                await self._send(transaction, callback, event,
-                                 sync=not synchronised, **kwargs)
+                await self._send(
+                    transaction, callback, event, sync=not synchronised, **kwargs
+                )
                 synchronised = True
 
 
@@ -225,7 +234,13 @@ class BusDriver(Driver):
 
     _optional_signals = []
 
-    def __init__(self, entity: SimHandleBase, name: Optional[str], clock: SimHandleBase, **kwargs: Any):
+    def __init__(
+        self,
+        entity: SimHandleBase,
+        name: Optional[str],
+        clock: SimHandleBase,
+        **kwargs: Any,
+    ):
         index = kwargs.get("array_idx", None)
 
         self.log = logging.getLogger("cocotb.%s.%s" % (entity._name, name))
@@ -233,8 +248,11 @@ class BusDriver(Driver):
         self.entity = entity
         self.clock = clock
         self.bus = Bus(
-            self.entity, name, self._signals, optional_signals=self._optional_signals,
-            **kwargs
+            self.entity,
+            name,
+            self._signals,
+            optional_signals=self._optional_signals,
+            **kwargs,
         )
 
         # Give this instance a unique name
@@ -297,8 +315,13 @@ class ValidatedBusDriver(BusDriver):
     """
 
     def __init__(
-        self, entity: SimHandleBase, name: str, clock: SimHandleBase, *,
-        valid_generator: Iterable[Tuple[int, int]] = None, **kwargs: Any
+        self,
+        entity: SimHandleBase,
+        name: str,
+        clock: SimHandleBase,
+        *,
+        valid_generator: Iterable[Tuple[int, int]] = None,
+        **kwargs: Any,
     ) -> None:
         BusDriver.__init__(self, entity, name, clock, **kwargs)
         self.on = None
@@ -322,12 +345,13 @@ class ValidatedBusDriver(BusDriver):
                 except StopIteration:
                     # If the generator runs out stop inserting non-valid cycles
                     self.on = True
-                    self.log.info("Valid generator exhausted, not inserting "
-                                  "non-valid cycles anymore")
+                    self.log.info(
+                        "Valid generator exhausted, not inserting "
+                        "non-valid cycles anymore"
+                    )
                     return
 
-            self.log.debug("Will be on for %d cycles, off for %s" %
-                           (self.on, self.off))
+            self.log.debug("Will be on for %d cycles, off for %s" % (self.on, self.off))
         else:
             # Valid every clock cycle
             self.on, self.off = True, False
@@ -346,6 +370,7 @@ async def polled_socket_attachment(driver, sock):
     """
     import socket
     import errno
+
     sock.setblocking(False)
     driver.log.info("Listening for data from %s" % repr(sock))
     while True:
