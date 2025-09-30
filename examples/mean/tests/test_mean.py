@@ -36,7 +36,7 @@ async def value_test(dut, nums):
     dut._log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
                   (DATA_WIDTH, BUS_WIDTH))
 
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, 'ns').start())
 
     dut.rst.value = 1
     for i in range(BUS_WIDTH):
@@ -102,7 +102,7 @@ async def mean_randomised_test(dut):
     dut._log.info('Detected DATA_WIDTH = %d, BUS_WIDTH = %d' %
                   (DATA_WIDTH, BUS_WIDTH))
 
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, 'ns').start())
 
     dut.rst.value = 1
     for i in range(BUS_WIDTH):

@@ -12,7 +12,7 @@ import warnings
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, Combine, Join, RisingEdge
+from cocotb.triggers import ClockCycles, Combine, RisingEdge
 from cocotb_bus.compat import TestFactory, convert_binary_to_unsigned
 from cocotb_bus.drivers.amba import (
     AXIBurst, AXI4LiteMaster, AXI4Master, AXIProtocolError, AXIReadBurstLengthMismatch,
@@ -435,8 +435,8 @@ async def test_simultaneous(dut, sync, num=5):
 
     if parse_version(cocotb.__version__) < parse_version("1.9.0"):
         for reader in readers:
-            read_values.append((await Join(reader))[0])
-        await Combine(*[Join(writer) for writer in dummy_writers])
+            read_values.append((await reader)[0])
+        await Combine(*(writer for writer in dummy_writers))
     else:
         for reader in readers:
             await reader

@@ -8,7 +8,7 @@
 
 import logging
 
-from cocotb.result import TestSuccess
+from cocotb_bus.compat import test_success
 
 from cocotb_bus.monitors import Monitor
 
@@ -71,7 +71,7 @@ class Scoreboard:
                 fail = True
         assert not fail, "Not all expected output was received"
         assert not self.errors, "Errors were recorded during the test"
-        return TestSuccess()
+        return test_success()
 
     def compare(self, got, exp, log, strict_type=True):
         """Common function for comparing two transactions.

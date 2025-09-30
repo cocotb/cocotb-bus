@@ -24,36 +24,59 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        cocotb-version: ["1.6.0", "1.9.0", "github-de51adf"]
         python-version: ["3.6", "3.12"]
-        # NOTE: align with versions in noxfile.py:
-        cocotb-version: ["1.6.0", "1.9.0", "github-b9dd5ee1"]
+        
+        sim: [icarus]
+        sim-version: [apt]
+        lang: [verilog]
+        os: [ubuntu-22.04]
+
         include:
-        - sim: icarus
-          sim-version: apt
-          lang: verilog
-          os: ubuntu-20.04
+          - python-version: "3.6"
+            python-setup: pyenv
+
     timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+
+    # Install python
+    - name: Set up Python ${{matrix.python-version}} (python-setup)
+      if: matrix.python-setup == ''
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{matrix.python-version}} (pyenv pt.1)
+      if: matrix.python-setup == 'pyenv'
+      uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
+      with:
+        default: ${{matrix.python-version}}
+        command: pip install -U pip  # upgrade pip after installing python
+    - name: Set up Python ${{matrix.python-version}} (pyenv pt.2)
+      if: matrix.python-setup == 'pyenv'
+      run: |
+        pyenv install ${{matrix.python-version}}
+        pyenv global ${{matrix.python-version}}
+
     - name: Install cocotb requirements
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends g++ make
+
     - name: Set up Icarus (apt)
       if: matrix.sim == 'icarus' && matrix.sim-version == 'apt'
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         sudo apt-get install --yes --no-install-recommends iverilog
+
     - name: Install testing requirements
       run: |
-        python -m pip install nox
+        pip install nox
+
     - name: Run tests
       env:
         COCOTB_ANSI_OUTPUT: 1

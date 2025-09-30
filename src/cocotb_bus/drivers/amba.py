@@ -96,11 +96,11 @@ class AXI4Master(BusDriver):
                 pass
 
         # Mutex for each channel to prevent contention
-        self.write_address_busy = Lock(name + "_awbusy")
-        self.read_address_busy = Lock(name + "_arbusy")
-        self.write_data_busy = Lock(name + "_wbusy")
-        self.read_data_busy = Lock(name + "_rbusy")
-        self.write_response_busy = Lock(name + "_bbusy")
+        self.write_address_busy = Lock()
+        self.read_address_busy = Lock()
+        self.write_data_busy = Lock()
+        self.read_data_busy = Lock()
+        self.write_response_busy = Lock()
 
     @staticmethod
     def _check_length(length: int, burst: AXIBurst) -> None:
@@ -602,9 +602,9 @@ class AXI4Slave(BusDriver):
         self.bus.AWREADY.value = 1
         self._memory = memory
 
-        self.write_address_busy = Lock("%s_wabusy" % name)
-        self.read_address_busy = Lock("%s_rabusy" % name)
-        self.write_data_busy = Lock("%s_wbusy" % name)
+        self.write_address_busy = Lock()
+        self.read_address_busy = Lock()
+        self.write_data_busy = Lock()
 
         cocotb.start_soon(self._read_data())
         cocotb.start_soon(self._write_data())

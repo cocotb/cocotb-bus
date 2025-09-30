@@ -4,3 +4,4 @@ src/cocotb_bus.egg-info/
 *.vcd
 *.xml
 sim_build
+*__pycache__/

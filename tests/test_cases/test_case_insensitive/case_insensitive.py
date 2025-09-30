@@ -85,7 +85,7 @@ class TestMonitor(BusMonitor):
 
 @cocotb.test()
 async def test_case_insensitive(dut):
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 10, "ns")
     cocotb.start_soon(clock.start())
     clkedge  = RisingEdge(dut.clk)
     in_data  = TestDriver(dut, "in", dut.clk)

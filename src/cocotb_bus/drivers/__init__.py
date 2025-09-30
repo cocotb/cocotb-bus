@@ -79,9 +79,9 @@ class Driver:
 
     def __init__(self):
         """Constructor for a driver instance."""
-        self._pending = Event(name="Driver._pending")
+        self._pending = Event()
         self._sendQ = deque()
-        self.busy_event = Event("Driver._busy")
+        self.busy_event = Event()
         self.busy = False
 
         # Sub-classes may already set up logging

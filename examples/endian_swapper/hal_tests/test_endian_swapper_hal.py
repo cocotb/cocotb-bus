@@ -49,7 +49,7 @@ async def reset(dut, duration=10):
 async def initial_hal_test(dut, debug=True):
     """Example of using the software HAL against cosim testbench"""
 
-    cocotb.start_soon(Clock(dut.clk, 5, units='ns').start())
+    cocotb.start_soon(Clock(dut.clk, 5, 'ns').start())
     await reset(dut)
 
     # Create the avalon master and direct our HAL calls to that
