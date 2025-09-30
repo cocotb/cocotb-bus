@@ -1,0 +1,49 @@
+# Copyright cocotb contributors
+# Licensed under the Revised BSD License, see LICENSE for details.
+# SPDX-License-Identifier: BSD-3-Clause
+
+repos:
+# ruff with --fix should run before other formatting tools
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.12.10
+  hooks:
+    # Run the formatter.
+    - id: ruff-format
+
+- repo: "https://github.com/pre-commit/pre-commit-hooks"
+  rev: v6.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+    args:
+      - --fix=lf
+  - id: fix-byte-order-marker
+  - id: check-yaml
+  - id: check-toml
+  - id: check-added-large-files
+
+- repo: https://github.com/henryiii/validate-pyproject-schema-store
+  rev: 2025.08.21
+  hooks:
+    - id: validate-pyproject
+      files: pyproject.toml
+
+- repo: local
+  hooks:
+  - id: git-diff
+    name: git diff
+    entry: git diff --exit-code
+    language: system
+    pass_filenames: false
+    always_run: true
+
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.4.1
+  hooks:
+  - id: codespell
+    additional_dependencies:
+      - tomli
+
+ci:
+  autofix_prs: false
