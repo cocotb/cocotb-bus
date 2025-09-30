@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-from packaging.version import parse as parse_version
-from typing import Optional, Union
 import warnings
+from typing import Optional, Union
 
 import cocotb
+from packaging.version import parse as parse_version
+
 
 def TestFactory(*args, **kwargs):
     with warnings.catch_warnings():
@@ -18,7 +19,7 @@ def TestFactory(*args, **kwargs):
 
 cocotb_2x_or_newer = parse_version(cocotb.__version__) > parse_version("2.dev0")
 if cocotb_2x_or_newer:
-    from cocotb.types import LogicArray, Logic, Range
+    from cocotb.types import Logic, LogicArray, Range
     BinaryType = Union[LogicArray, Logic]
 
 
@@ -83,16 +84,9 @@ if cocotb_2x_or_newer:
     def test_success():
         cocotb.pass_test()
 
-    
-    def join(task):
-        return task
-
-
 else:
     from cocotb.binary import BinaryValue
-    from cocotb.binary import _RESOLVE_TO_CHOICE
     from cocotb.result import TestSuccess
-    from cocotb.triggers import Join
 
     coroutine = cocotb.coroutine
     BinaryType = BinaryValue
@@ -133,10 +127,6 @@ else:
 
     def test_success():
         return TestSuccess()
-    
-    
-    def join(task):
-        return Join(task)
 
 
 def binary_is_resolvable(value: BinaryType):

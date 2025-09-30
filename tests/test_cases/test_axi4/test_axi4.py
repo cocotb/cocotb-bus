@@ -18,8 +18,6 @@ from cocotb_bus.drivers.amba import (
     AXIBurst, AXI4LiteMaster, AXI4Master, AXIProtocolError, AXIReadBurstLengthMismatch,
     AXIxRESP)
 
-from cocotb_bus.compat import join
-
 
 CLK_PERIOD = (10, "ns")
 AXI_PREFIX = "S_AXI"
@@ -437,8 +435,8 @@ async def test_simultaneous(dut, sync, num=5):
 
     if parse_version(cocotb.__version__) < parse_version("1.9.0"):
         for reader in readers:
-            read_values.append((await join(reader))[0])
-        await Combine(*[join(writer) for writer in dummy_writers])
+            read_values.append((await reader)[0])
+        await Combine(*(writer for writer in dummy_writers))
     else:
         for reader in readers:
             await reader
