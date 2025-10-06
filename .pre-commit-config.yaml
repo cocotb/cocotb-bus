@@ -5,7 +5,7 @@
 repos:
 # ruff with --fix should run before other formatting tools
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.12.10
+  rev: v0.13.3
   hooks:
     # Run the formatter.
     - id: ruff-format
@@ -24,7 +24,7 @@ repos:
   - id: check-added-large-files
 
 - repo: https://github.com/henryiii/validate-pyproject-schema-store
-  rev: 2025.08.21
+  rev: 2025.10.03
   hooks:
     - id: validate-pyproject
       files: pyproject.toml
