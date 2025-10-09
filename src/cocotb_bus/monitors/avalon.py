@@ -162,6 +162,10 @@ class AvalonSTPkts(BusMonitor):
             await clkedge
 
             if self.in_reset:
+                pkt = b""
+                in_pkt = False
+                invalid_cyclecount = 0
+                channel = None
                 continue
 
             if valid():
