@@ -24,9 +24,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cocotb-version: ["1.6.0", "1.9.0", "github-de51adf"]
-        python-version: ["3.6", "3.12"]
-
+        cocotb-version: ["1.6.0", "1.9.0", "2.0.1"]
+        python-version: ["3.6", "3.13"]
         sim: [icarus]
         sim-version: [apt]
         lang: [verilog]
