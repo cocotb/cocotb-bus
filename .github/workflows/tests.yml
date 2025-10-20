@@ -32,8 +32,14 @@ jobs:
         os: [ubuntu-22.04]
 
         include:
+          # Add pyenv to every 3.6 job
           - python-version: "3.6"
             python-setup: pyenv
+
+        exclude:
+          # Ensure 3.13 is not used to test cocotb 1.6.0
+          - python-version: "3.13"
+            cocotb-version: "1.6.0"
 
     timeout-minutes: 10
 
