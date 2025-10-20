@@ -2,7 +2,7 @@ import nox
 
 
 @nox.session
-@nox.parametrize("cocotb", ["1.6.0", "1.9.0", "github-de51adf"])
+@nox.parametrize("cocotb", ["1.6.0", "1.9.0", "2.0.1"])
 def tests(session, cocotb):
     if cocotb.startswith("github-"):
         cocotb_req = "git+https://github.com/cocotb/cocotb@" + cocotb[len("github-") :]
