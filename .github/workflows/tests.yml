@@ -21,6 +21,7 @@ jobs:
     env:
       SIM: ${{ matrix.sim }}
       TOPLEVEL_LANG: ${{ matrix.lang }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
