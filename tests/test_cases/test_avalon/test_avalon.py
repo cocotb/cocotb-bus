@@ -51,8 +51,8 @@ class BurstAvlReadTest(object):
 
         self.avl32 = AvalonMemory(
             dut,
-            "master",
             dut.clk,
+            "master",
             memory=self.memdict,
             readlatency_min=0,
             avl_properties=avlproperties,

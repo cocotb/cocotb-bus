@@ -73,10 +73,10 @@ class Monitor:
         # Create an independent coroutine which can receive stuff
         self._thread = cocotb.start_soon(self._monitor_recv())
 
-    def kill(self):
-        """Kill the monitor coroutine."""
+    def cancel(self):
+        """Cancel further execution of the monitor coroutine."""
         if self._thread:
-            self._thread.kill()
+            self._thread.cancel()
             self._thread = None
 
     def __len__(self):

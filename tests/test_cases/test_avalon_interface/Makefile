@@ -28,6 +28,6 @@
 ###############################################################################
 
 
-include ../../designs/avalon_module/Makefile
+include ../../designs/avalon_interface_module/Makefile
 
-COCOTB_TEST_MODULES = test_avalon
+COCOTB_TEST_MODULES = test_avalon_interface

@@ -1,3 +1,3 @@
 include ../../designs/axi4_ram/Makefile
 
-MODULE = test_axi4
+COCOTB_TEST_MODULES = test_axi4

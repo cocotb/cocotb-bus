@@ -27,7 +27,34 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
+TOPLEVEL_LANG ?= verilog
 
-include ../../designs/avalon_module/Makefile
+ifneq ($(TOPLEVEL_LANG),verilog)
+all:
+	@echo "Skipping test due to TOPLEVEL_LANG=$(TOPLEVEL_LANG) not being verilog" 
+clean::
 
-COCOTB_TEST_MODULES = test_avalon
+else
+
+ifneq ($(SIM),verilator)
+all:
+	@echo "Skipping test due to SIM=$(TOPLEVEL_LANG) not being verilator. (iverilog does not support SystemVerilog interfaces.)" 
+clean::
+
+else
+TOPLEVEL := avl_feedback
+
+PWD=$(shell pwd)
+
+COCOTB?=$(PWD)/../../..
+
+VERILOG_SOURCES += $(COCOTB)/tests/designs/avalon_interface_module/avl_mm_mini_if.sv 
+VERILOG_SOURCES += $(COCOTB)/tests/designs/avalon_interface_module/avl_st_mini_if.sv
+VERILOG_SOURCES += $(COCOTB)/tests/designs/avalon_interface_module/st_feedback.sv
+VERILOG_SOURCES += $(COCOTB)/tests/designs/avalon_interface_module/mm_reader.sv
+VERILOG_SOURCES += $(COCOTB)/tests/designs/avalon_interface_module/avl_feedback.sv
+
+include $(shell cocotb-config --makefiles)/Makefile.sim
+
+endif
+endif

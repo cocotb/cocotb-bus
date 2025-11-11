@@ -14,4 +14,4 @@ endif
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 
-MODULE = test_array_buses
+COCOTB_TEST_MODULES = test_array_buses

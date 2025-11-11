@@ -1,4 +1,4 @@
 include ../../designs/avalon_streaming_module/Makefile
 
 export PYTHONWARNINGS=error
-MODULE = test_avalon_stream
+COCOTB_TEST_MODULES = test_avalon_stream

@@ -47,7 +47,7 @@ class BitDriver:
 
     def stop(self):
         """Stop generating data."""
-        self._cr.kill()
+        self._cr.cancel()
 
     async def _cr_twiddler(self, generator=None):
         if generator is None and self._generator is None:
@@ -99,10 +99,10 @@ class Driver:
         self.busy = False
         self.busy_event.set()
 
-    def kill(self):
-        """Kill the coroutine sending stuff."""
+    def cancel(self):
+        """Cancel a driver further execution."""
         if self._thread:
-            self._thread.kill()
+            self._thread.cancel()
             self._thread = None
 
     def append(

@@ -10,4 +10,4 @@ VERILOG_SOURCES = $(PWD)/case_insensitive.v
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-MODULE = case_insensitive
+COCOTB_TEST_MODULES = case_insensitive
