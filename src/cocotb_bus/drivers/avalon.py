@@ -508,14 +508,6 @@ class AvalonMemory(BusDriver):
                     if self._avalon_properties.get("WriteBurstWaitReq", True):
                         self.bus.waitrequest.value = 1
 
-    def count_mem(self):
-        if isinstance(self._mem, Union[Dict, List]):
-            return len(self._mem)
-        else:
-            self.log.error("Only supports dictionary or lists as memories.")
-
-    def read_mem(self):
-        return self._mem
 
 class AvalonST(ValidatedBusDriver):
     """Avalon Streaming Interface (Avalon-ST) Driver"""
@@ -525,7 +517,9 @@ class AvalonST(ValidatedBusDriver):
 
     _default_config = {"firstSymbolInHighOrderBits": True}
 
-    def __init__(self, entity, clock, name: Optional[str] = None, *, config={}, **kwargs):
+    def __init__(
+        self, entity, clock, name: Optional[str] = None, *, config={}, **kwargs
+    ):
         ValidatedBusDriver.__init__(self, entity, name, clock, **kwargs)
 
         self.config = AvalonST._default_config.copy()
@@ -615,7 +609,9 @@ class AvalonSTPkts(ValidatedBusDriver):
         "readyLatency": 0,
     }
 
-    def __init__(self, entity, clock, name: Optional[str] = None, *, config={}, **kwargs):
+    def __init__(
+        self, entity, clock, name: Optional[str] = None, *, config={}, **kwargs
+    ):
         ValidatedBusDriver.__init__(self, entity, name, clock, **kwargs)
 
         self.config = AvalonSTPkts._default_config.copy()
