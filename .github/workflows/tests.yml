@@ -9,6 +9,10 @@ on:
     branches:
       - master
       - 'stable/**'
+  push:
+    branches:
+      - master
+      - "stable/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
