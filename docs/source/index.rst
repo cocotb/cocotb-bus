@@ -140,12 +140,6 @@ used in the :mod:`.scoreboard`.
    :name: development_community
    :hidden:
 
-   release_notes
-..
-      roadmap
-      contributors
-      further_resources
-
 .. todo::
    - Add "Join us online" and "Contributing"
    - In Contributing, add explanation on how to provide a PR, how to test existing PRs, etc.

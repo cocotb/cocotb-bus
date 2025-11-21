@@ -1,1 +1,0 @@
-cocotb-bus now depends on ``scapy`` (https://scapy.readthedocs.io/) for its :func:`scapy.utils.hexdump` and :func:`scapy.utils.hexdiff` functions used in the :mod:`.scoreboard`.
